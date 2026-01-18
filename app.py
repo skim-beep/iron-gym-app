@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, date
 import plotly.graph_objects as go
 import google.generativeai as genai
 import gspread
@@ -11,18 +11,44 @@ from streamlit_option_menu import option_menu
 # --- 1. НАСТРОЙКА СТРАНИЦЫ ---
 st.set_page_config(
     page_title="IRON GYM OS",
-    page_icon="🛡️",
-    layout="centered", # Мобильный вид
+    page_icon="🦅",
+    layout="centered", 
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. ВЫБРАННЫЙ АВАТАР (DESERT OPS) ---
-AVATAR_URL = "https://i.pinimg.com/736x/8b/44/49/8b444907994406263702b8d4e92a2334.jpg"
+# --- 2. НАСТРОЙКИ ПРОФИЛЯ ---
+# Надежная ссылка на аватар (Tactical Operator)
+AVATAR_URL = "https://i.imgur.com/8N3g2QJ.jpeg"
+# Иконка звания (US Army Captain - O3)
+RANK_ICON = "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/US-Army-O3-Collar.svg/800px-US-Army-O3-Collar.svg.png"
 
-# --- 3. ДИЗАЙН И СТИЛИ (CSS) ---
+USER_BIRTHDAY = date(1985, 2, 20)
+USER_WEIGHT_TARGET = 90.0 # Цель
+USER_WEIGHT_CURRENT = 85.0 # Пока хардкод (можно брать из базы)
+
+# --- 3. ФУНКЦИИ БИОМЕТРИИ ---
+def calculate_age(birthdate):
+    today = date.today()
+    return today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
+
+def calculate_tenure(df):
+    if df.empty:
+        return "0 ДНЕЙ"
+    try:
+        # Ищем самую раннюю дату в базе
+        first_date = pd.to_datetime(df['date']).min()
+        days = (datetime.now() - first_date).days
+        if days > 365:
+            return f"{days // 365} Г. {days % 365} ДН."
+        return f"{days} ДН."
+    except:
+        return "1 ДЕНЬ"
+
+# --- 4. ДИЗАЙН И СТИЛИ (CSS) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&display=swap');
 
     .stApp {{
         background-color: #F2F3F7;
@@ -39,56 +65,97 @@ st.markdown(f"""
         box-shadow: 0px 4px 20px rgba(0,0,0,0.05);
     }}
 
-    /* Хедер Профиля (ФИНАЛЬНЫЙ ВАРИАНТ - ИДЕАЛЬНЫЙ КРУГ) */
+    /* ХЕДЕР ПРОФИЛЯ (СЛОЖНАЯ СТРУКТУРА) */
     .profile-header {{
         display: flex;
         align-items: center;
         background-color: #FFFFFF;
         padding: 15px;
-        border-radius: 20px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        margin-bottom: 20px;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        margin-bottom: 25px;
+        border: 1px solid #FFFFFF;
+    }}
+    
+    .avatar-wrapper {{
+        position: relative;
+        margin-right: 18px;
     }}
     
     .avatar-container {{
-        width: 80px;
-        height: 80px;
-        border-radius: 50%; /* Круг */
-        overflow: hidden; /* Обрезаем всё лишнее */
-        margin-right: 15px;
-        border: 2px solid #1A1A1A; /* Тонкая черная рамка */
-        flex-shrink: 0;
+        width: 85px;
+        height: 85px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 3px solid #1C1C1E;
     }}
     
     .avatar-img {{
         width: 100%;
         height: 100%;
-        object-fit: cover; /* Фото заполняет круг ПОЛНОСТЬЮ */
+        object-fit: cover;
+    }}
+    
+    .user-info {{
+        flex-grow: 1;
+    }}
+
+    .name-rank-row {{
+        display: flex;
+        align-items: center;
+        margin-bottom: 4px;
+    }}
+    
+    .user-name {{
+        font-size: 24px;
+        font-weight: 900;
+        color: #1C1C1E;
+        letter-spacing: -0.5px;
+        margin-right: 8px;
+        line-height: 1;
+    }}
+    
+    .rank-icon {{
+        height: 20px;
+        width: auto;
+    }}
+
+    .rank-title {{
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 11px;
+        color: #8E8E93;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 8px;
         display: block;
     }}
 
-    .user-info h3 {{
-        margin: 0;
-        font-size: 22px;
-        font-weight: 800;
-        color: #1C1C1E;
+    /* СТАТИСТИКА (Возраст, Вес, Стаж) */
+    .stats-badges {{
+        display: flex;
+        gap: 8px;
     }}
-    .user-info p {{
-        margin: 2px 0 0 0;
-        color: #8E8E93;
-        font-size: 13px;
-        font-weight: 600;
-        letter-spacing: 0.5px;
+    
+    .stat-badge {{
+        background-color: #F2F2F7;
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #3A3A3C;
+        display: flex;
+        align-items: center;
     }}
 
     /* Метрики */
     div[data-testid="stMetricValue"] {{
-        font-size: 32px !important;
+        font-size: 30px !important;
         font-weight: 800 !important;
         color: #000000 !important;
     }}
     label[data-testid="stMetricLabel"] {{
-        font-size: 13px !important;
+        font-size: 12px !important;
         color: #8E8E93 !important;
         font-weight: 600;
     }}
@@ -96,21 +163,17 @@ st.markdown(f"""
     /* Кнопки */
     div.stButton > button {{
         width: 100%;
-        background-color: #000000;
+        background-color: #1C1C1E;
         color: #FFFFFF;
-        border-radius: 12px;
-        padding: 14px 20px;
+        border-radius: 14px;
+        padding: 14px;
         font-weight: 600;
         border: none;
-    }}
-    div.stButton > button:hover {{
-        background-color: #333333;
-        color: #FFFFFF;
     }}
     </style>
 """, unsafe_allow_html=True)
 
-# --- 4. ПОДКЛЮЧЕНИЕ К БАЗЕ ---
+# --- 5. ПОДКЛЮЧЕНИЕ К БАЗЕ ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
@@ -131,17 +194,32 @@ try:
 except Exception as e:
     df = pd.DataFrame()
 
-# --- 5. ИНТЕРФЕЙС ---
+# --- 6. РАСЧЕТ ДАННЫХ ---
+user_age = calculate_age(USER_BIRTHDAY)
+tenure = calculate_tenure(df)
+
+# --- 7. ИНТЕРФЕЙС ---
 
 # Хедер (HTML)
 st.markdown(f"""
     <div class="profile-header">
-        <div class="avatar-container">
-            <img src="{AVATAR_URL}" class="avatar-img">
+        <div class="avatar-wrapper">
+            <div class="avatar-container">
+                <img src="{AVATAR_URL}" class="avatar-img">
+            </div>
         </div>
         <div class="user-info">
-            <h3>SERGEY</h3>
-            <p>OPERATOR // IRON GYM OS</p>
+            <div class="name-rank-row">
+                <span class="user-name">SERGEY</span>
+                <img src="{RANK_ICON}" class="rank-icon" title="Captain">
+            </div>
+            <span class="rank-title">CAPTAIN (O-3) // US ARMY</span>
+            
+            <div class="stats-badges">
+                <div class="stat-badge">🎂 {user_age} YEARS</div>
+                <div class="stat-badge">⚖️ {USER_WEIGHT_CURRENT} KG</div>
+                <div class="stat-badge">⏳ {tenure}</div>
+            </div>
         </div>
     </div>
 """, unsafe_allow_html=True)
@@ -168,17 +246,21 @@ if selected == "DASHBOARD":
     
     total_vol = 0
     workouts_count = 0
+    last_date = "N/A"
+    
     if not df.empty and 'weight' in df.columns:
         df['weight'] = pd.to_numeric(df['weight'], errors='coerce').fillna(0)
         df['reps'] = pd.to_numeric(df['reps'], errors='coerce').fillna(0)
         total_vol = (df['weight'] * df['reps']).sum()
         workouts_count = len(df)
+        if 'date' in df.columns:
+            last_date = df.iloc[-1]['date']
 
-    with col1: st.metric("ТОННАЖ", f"{int(total_vol/1000)}k")
-    with col2: st.metric("ПОДХОДОВ", f"{workouts_count}")
+    with col1: st.metric("ТОННАЖ", f"{int(total_vol/1000)}k", "ALL TIME")
+    with col2: st.metric("ТРЕНИРОВОК", f"{workouts_count}", f"LAST: {last_date}")
         
     st.markdown("---")
-    st.caption("ДИНАМИКА ОБЪЕМА")
+    st.caption("ПРОГРЕСС")
     
     if not df.empty:
         daily_vol = df.groupby('date').apply(lambda x: (x['weight'] * x['reps']).sum()).reset_index(name='vol')
@@ -216,18 +298,21 @@ elif selected == "LOGBOOK":
                     st.error("Ошибка записи (проверь столбцы в таблице)")
 
 elif selected == "AI COACH":
-    st.caption("GEM-BOT TACTICAL ADVISOR")
+    st.caption("TACTICAL ADVISOR")
     if "messages" not in st.session_state: st.session_state.messages = []
     
     for m in st.session_state.messages:
         with st.chat_message(m["role"]): st.markdown(m["content"])
         
-    if prompt := st.chat_input("Вопрос..."):
+    if prompt := st.chat_input("Запрос..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"): st.markdown(prompt)
         
+        # Контекст для ИИ
+        info_context = f"Атлет: Сергей, Возраст: {user_age}, Вес: {USER_WEIGHT_CURRENT}кг."
+        
         model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
-        response = model.generate_content(f"Ты жесткий тактический тренер. Кратко: {prompt}")
+        response = model.generate_content(f"Ты военный инструктор. Твои данные о бойце: {info_context}. Ответь кратко: {prompt}")
         
         with st.chat_message("assistant"): st.markdown(response.text)
         st.session_state.messages.append({"role": "assistant", "content": response.text})
