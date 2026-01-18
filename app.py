@@ -63,18 +63,17 @@ def calculate_age(birthdate):
     today = date.today()
     return today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
 
-# Определяем группу мышц по названию упражнения
 def detect_muscle_group(exercise_name):
     ex = str(exercise_name).lower()
-    if any(x in ex for x in ['жим лежа', 'жим гантелей', 'бабочка', 'chest', 'отжимания', 'брусья']): return "ГРУДЬ"
+    if any(x in ex for x in ['жим лежа', 'жим гантелей', 'бабочка', 'chest', 'отжимания', 'брусья', 'груд']): return "ГРУДЬ"
     if any(x in ex for x in ['тяга', 'подтягивания', 'спина', 'back', 'row']): return "СПИНА"
-    if any(x in ex for x in ['присед', 'ноги', 'выпады', 'legs', 'squat']): return "НОГИ"
+    if any(x in ex for x in ['присед', 'ноги', 'выпады', 'legs', 'squat', 'бег', 'эллипс']): return "НОГИ"
     if any(x in ex for x in ['бицепс', 'трицепс', 'молот', 'arms', 'bicep']): return "РУКИ"
-    if any(x in ex for x in ['жим стоя', 'плечи', 'махи', 'shouder', 'press']): return "ПЛЕЧИ"
-    if any(x in ex for x in ['пресс', 'планка', 'abs', 'core']): return "КОР"
+    if any(x in ex for x in ['жим стоя', 'плечи', 'махи', 'shouder', 'press', 'разведение']): return "ПЛЕЧИ"
+    if any(x in ex for x in ['пресс', 'планка', 'abs', 'core', 'скручивания']): return "КОР"
     return "ОБЩЕЕ"
 
-# --- 5. CSS СТИЛИ ---
+# --- 5. CSS СТИЛИ (ИСПРАВЛЕНЫ СКОБКИ) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap');
@@ -185,22 +184,22 @@ st.markdown(f"""
         border: none;
     }}
     
-    /* CALENDAR STYLES */
-    .calendar-table { width: 100%; border-collapse: separate; border-spacing: 4px; }
-    .calendar-cell { 
+    /* CALENDAR STYLES - ТЕПЕРЬ С ДВОЙНЫМИ СКОБКАМИ */
+    .calendar-table {{ width: 100%; border-collapse: separate; border-spacing: 4px; }}
+    .calendar-cell {{ 
         text-align: center; 
         padding: 10px; 
         border-radius: 8px; 
         font-size: 14px; 
         font-weight: 600; 
         color: #1C1C1E;
-    }
-    .day-header { color: #8E8E93; font-size: 12px; text-transform: uppercase; }
-    .day-trained { background-color: #8E8E93; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-    .day-missed { background-color: #FFB3B3; color: #8b0000; }
-    .day-today { border: 2px solid #D4AF37; color: #D4AF37; font-weight: 900; }
-    .day-empty { background-color: transparent; }
-    .day-future { color: #D1D1D6; }
+    }}
+    .day-header {{ color: #8E8E93; font-size: 12px; text-transform: uppercase; }}
+    .day-trained {{ background-color: #8E8E93; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }}
+    .day-missed {{ background-color: #FFB3B3; color: #8b0000; }}
+    .day-today {{ border: 2px solid #D4AF37; color: #D4AF37; font-weight: 900; }}
+    .day-empty {{ background-color: transparent; }}
+    .day-future {{ color: #D1D1D6; }}
     </style>
 """, unsafe_allow_html=True)
 
@@ -221,13 +220,12 @@ try:
         df['Тоннаж'] = pd.to_numeric(df['Тоннаж'], errors='coerce').fillna(0)
         df['День/Дата'] = pd.to_datetime(df['День/Дата'], errors='coerce')
         df = df.dropna(subset=['День/Дата'])
-        df['Muscle'] = df['Упражнение'].apply(detect_muscle_group) # Добавляем группы мышц
+        df['Muscle'] = df['Упражнение'].apply(detect_muscle_group)
         
 except Exception as e:
     df = pd.DataFrame()
 
 user_age = calculate_age(USER_BIRTHDAY)
-# Считаем уникальные дни тренировок для календаря
 trained_dates = set()
 if not df.empty:
     trained_dates = set(df['День/Дата'].dt.date)
@@ -272,20 +270,17 @@ selected = option_menu(
     }
 )
 
-# --- 9. DASHBOARD LOGIC ---
+# --- 9. DASHBOARD ---
 if selected == "DASHBOARD":
     
-    # === 1. RADAR CHART (MUSCLE BALANCE) ===
+    # RADAR CHART
     st.subheader("BODY ARMOR STATUS")
     if not df.empty:
-        # Группируем по мышцам и суммируем тоннаж
         muscle_data = df.groupby('Muscle')['Тоннаж'].sum().reset_index()
-        # Обязательные группы (чтобы радар был полным даже если 0)
         all_muscles = ["ГРУДЬ", "СПИНА", "НОГИ", "РУКИ", "ПЛЕЧИ", "КОР"]
         radar_df = pd.DataFrame({"Muscle": all_muscles})
         radar_df = radar_df.merge(muscle_data, on="Muscle", how="left").fillna(0)
         
-        # Строим график
         fig = go.Figure(data=go.Scatterpolar(
             r=radar_df['Тоннаж'],
             theta=radar_df['Muscle'],
@@ -306,12 +301,11 @@ if selected == "DASHBOARD":
         )
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar':False})
     else:
-        st.info("No data for radar chart.")
+        st.info("No data for radar.")
 
-    # === 2. TACTICAL CALENDAR ===
+    # TACTICAL CALENDAR
     st.subheader("MISSION CALENDAR")
     
-    # Управление месяцем
     if 'cal_year' not in st.session_state: st.session_state.cal_year = date.today().year
     if 'cal_month' not in st.session_state: st.session_state.cal_month = date.today().month
 
@@ -327,7 +321,6 @@ if selected == "DASHBOARD":
         st.session_state.cal_month = m
         st.session_state.cal_year = y
 
-    # Кнопки навигации
     col_prev, col_month, col_next = st.columns([1, 2, 1])
     with col_prev: st.button("◀", on_click=change_month, args=(-1,))
     with col_month: 
@@ -335,7 +328,6 @@ if selected == "DASHBOARD":
         st.markdown(f"<h3 style='text-align: center; margin:0;'>{month_name} {st.session_state.cal_year}</h3>", unsafe_allow_html=True)
     with col_next: st.button("▶", on_click=change_month, args=(1,))
 
-    # Генерация календаря
     cal = calendar.monthcalendar(st.session_state.cal_year, st.session_state.cal_month)
     today = date.today()
     
@@ -353,15 +345,14 @@ if selected == "DASHBOARD":
                 current_date = date(st.session_state.cal_year, st.session_state.cal_month, day)
                 css_class = "calendar-cell"
                 
-                # Логика цветов
                 if current_date == today:
                     css_class += " day-today"
                 elif current_date in trained_dates:
-                    css_class += " day-trained" # Серый (был в зале)
+                    css_class += " day-trained"
                 elif current_date < today and current_date not in trained_dates:
-                    css_class += " day-missed" # Красный (пропуск в прошлом)
+                    css_class += " day-missed"
                 elif current_date > today:
-                    css_class += " day-future" # Будущее
+                    css_class += " day-future"
 
                 html_cal += f'<td class="{css_class}">{day}</td>'
         html_cal += '</tr>'
@@ -369,7 +360,6 @@ if selected == "DASHBOARD":
     
     st.markdown(html_cal, unsafe_allow_html=True)
     
-    # --- Легенда календаря ---
     st.markdown("""
     <div style="display:flex; gap:15px; justify-content:center; margin-top:10px; font-size:11px; color:#666;">
         <div style="display:flex; align-items:center;"><div style="width:10px; height:10px; background:#8E8E93; margin-right:5px; border-radius:2px;"></div>COMPLETED</div>
@@ -378,7 +368,6 @@ if selected == "DASHBOARD":
     </div>
     """, unsafe_allow_html=True)
     
-    # Вкладки истории и рекордов (оставляем, они полезны)
     st.markdown("---")
     tab_hist, tab_rec = st.tabs(["📝 HISTORY", "🏆 RECORDS"])
     
@@ -397,7 +386,7 @@ if selected == "DASHBOARD":
             records = records.sort_values('PR (KG)', ascending=False).head(15)
             st.dataframe(records, use_container_width=True, hide_index=True)
 
-# --- LOGBOOK & AI COACH (Без изменений, только формат сохранения) ---
+# --- LOGBOOK ---
 elif selected == "LOGBOOK":
     st.caption("NEW ENTRY")
     with st.form("add"):
@@ -423,6 +412,7 @@ elif selected == "LOGBOOK":
                     st.rerun()
                 except: st.error("Error")
 
+# --- AI COACH ---
 elif selected == "AI COACH":
     st.caption(f"INSTRUCTOR // {rank['abbr']}")
     if "messages" not in st.session_state: st.session_state.messages = []
