@@ -74,7 +74,8 @@ st.markdown(f"""
         height: 85px;
         border-radius: 50%;
         overflow: hidden;
-        border: 3px solid #1C1C1E;
+        /* ИЗМЕНЕНИЕ: Тонкий золотой контур в 1px */
+        border: 1px solid #D4AF37; 
         flex-shrink: 0;
         margin-right: 20px;
     }}
@@ -93,10 +94,9 @@ st.markdown(f"""
     .user-name {{
         font-size: 24px;
         font-weight: 900;
-        color: #D4AF37; /* Основной золотой цвет */
+        color: #D4AF37;
         margin-right: 10px;
         line-height: 1;
-        /* Эффект свечения (Glow Effect) */
         text-shadow: 0 0 10px #FFD700, 0 0 20px #D4AF37, 0 0 30px rgba(212, 175, 55, 0.4);
     }}
     
