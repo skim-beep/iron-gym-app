@@ -21,7 +21,7 @@ st.set_page_config(
 # ТВОЙ АВАТАР (Прямая ссылка)
 AVATAR_URL = "https://i.ibb.co.com/TDhQXVTR/unnamed-3.jpg"
 
-# Иконка звания (Капитан)
+# Иконка звания (Капитан - Две серебряные шпалы)
 RANK_ICON = "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Captain_icon.svg/1024px-Captain_icon.svg.png"
 
 USER_BIRTHDAY = date(1985, 2, 20)
@@ -74,8 +74,7 @@ st.markdown(f"""
         height: 85px;
         border-radius: 50%;
         overflow: hidden;
-        /* ИЗМЕНЕНИЕ: Тонкий золотой контур в 1px */
-        border: 1px solid #D4AF37; 
+        border: 1px solid #D4AF37; /* Тонкий золотой контур */
         flex-shrink: 0;
         margin-right: 20px;
     }}
@@ -87,20 +86,30 @@ st.markdown(f"""
     .name-row {{
         display: flex;
         align-items: center;
-        margin-bottom: 5px;
+        margin-bottom: 2px;
     }}
     
-    /* ЗОЛОТОЕ ИМЯ + СВЕЧЕНИЕ */
     .user-name {{
-        font-size: 24px;
+        font-size: 26px;
         font-weight: 900;
-        color: #D4AF37;
-        margin-right: 10px;
+        color: #D4AF37; /* GOLD */
         line-height: 1;
-        text-shadow: 0 0 10px #FFD700, 0 0 20px #D4AF37, 0 0 30px rgba(212, 175, 55, 0.4);
+        text-shadow: 0 0 15px rgba(212, 175, 55, 0.5); /* SVECHENIE */
     }}
     
-    .rank-img {{ width: 22px; height: auto; }}
+    /* СТРОКА СО ЗВАНИЕМ */
+    .rank-row {{
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }}
+
+    .rank-img {{ 
+        height: 16px; /* Размер значка */
+        width: auto; 
+        margin-left: 8px; /* Отступ от текста */
+        opacity: 0.8;
+    }}
     
     .rank-text {{
         font-family: 'JetBrains Mono', monospace;
@@ -109,8 +118,7 @@ st.markdown(f"""
         font-weight: 700;
         letter-spacing: 1px;
         text-transform: uppercase;
-        display: block;
-        margin-bottom: 10px;
+        margin: 0;
     }}
     
     .stats-row {{ display: flex; gap: 8px; flex-wrap: wrap; }}
@@ -165,9 +173,11 @@ st.markdown(f"""
     <div class="info-area">
         <div class="name-row">
             <span class="user-name">SERGEY</span>
+        </div>
+        <div class="rank-row">
+            <span class="rank-text">CAPTAIN (O-3) // US ARMY</span>
             <img src="{RANK_ICON}" class="rank-img">
         </div>
-        <span class="rank-text">CAPTAIN (O-3) // US ARMY</span>
         <div class="stats-row">
             <div class="stat-badge">🎂 {user_age} YRS</div>
             <div class="stat-badge">⚖️ {USER_WEIGHT_CURRENT} KG</div>
