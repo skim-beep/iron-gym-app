@@ -16,15 +16,15 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. НАСТРОЙКИ ПРОФИЛЯ ---
-# Надежная ссылка на аватар (Tactical Operator)
-AVATAR_URL = "https://i.imgur.com/8N3g2QJ.jpeg"
-# Иконка звания (US Army Captain - O3)
-RANK_ICON = "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/US-Army-O3-Collar.svg/800px-US-Army-O3-Collar.svg.png"
+# --- 2. НАСТРОЙКИ ПРОФИЛЯ (НОВЫЕ ССЫЛКИ) ---
+# Стабильная ссылка на фото оператора (Unsplash)
+AVATAR_URL = "https://images.unsplash.com/photo-1542317854-f9596af69ded?q=80&w=200&auto=format&fit=crop"
+# Иконка звания (Капитан, 2 полоски - Wikimedia)
+RANK_ICON = "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Captain_icon.svg/1024px-Captain_icon.svg.png"
 
 USER_BIRTHDAY = date(1985, 2, 20)
-USER_WEIGHT_TARGET = 90.0 # Цель
-USER_WEIGHT_CURRENT = 85.0 # Пока хардкод (можно брать из базы)
+USER_WEIGHT_TARGET = 90.0 
+USER_WEIGHT_CURRENT = 85.0 
 
 # --- 3. ФУНКЦИИ БИОМЕТРИИ ---
 def calculate_age(birthdate):
@@ -35,7 +35,6 @@ def calculate_tenure(df):
     if df.empty:
         return "0 ДНЕЙ"
     try:
-        # Ищем самую раннюю дату в базе
         first_date = pd.to_datetime(df['date']).min()
         days = (datetime.now() - first_date).days
         if days > 365:
@@ -57,7 +56,6 @@ st.markdown(f"""
 
     #MainMenu, footer, header {{visibility: hidden;}}
 
-    /* Карточки */
     div[data-testid="stVerticalBlock"] > div[style*="background-color"] {{
         background-color: #FFFFFF;
         border-radius: 20px;
@@ -65,29 +63,25 @@ st.markdown(f"""
         box-shadow: 0px 4px 20px rgba(0,0,0,0.05);
     }}
 
-    /* ХЕДЕР ПРОФИЛЯ (СЛОЖНАЯ СТРУКТУРА) */
-    .profile-header {{
+    /* СТИЛИ ПРОФИЛЯ */
+    .profile-card {{
+        background-color: #FFFFFF;
+        padding: 20px;
+        border-radius: 24px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        margin-bottom: 25px;
         display: flex;
         align-items: center;
-        background-color: #FFFFFF;
-        padding: 15px;
-        border-radius: 24px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        margin-bottom: 25px;
-        border: 1px solid #FFFFFF;
     }}
     
-    .avatar-wrapper {{
-        position: relative;
-        margin-right: 18px;
-    }}
-    
-    .avatar-container {{
-        width: 85px;
-        height: 85px;
+    .avatar-box {{
+        width: 90px;
+        height: 90px;
         border-radius: 50%;
         overflow: hidden;
         border: 3px solid #1C1C1E;
+        margin-right: 20px;
+        flex-shrink: 0;
     }}
     
     .avatar-img {{
@@ -96,76 +90,55 @@ st.markdown(f"""
         object-fit: cover;
     }}
     
-    .user-info {{
-        flex-grow: 1;
-    }}
-
-    .name-rank-row {{
-        display: flex;
-        align-items: center;
-        margin-bottom: 4px;
-    }}
-    
-    .user-name {{
-        font-size: 24px;
+    .info-box h1 {{
+        margin: 0;
+        font-size: 26px;
         font-weight: 900;
         color: #1C1C1E;
-        letter-spacing: -0.5px;
-        margin-right: 8px;
-        line-height: 1;
-    }}
-    
-    .rank-icon {{
-        height: 20px;
-        width: auto;
-    }}
-
-    .rank-title {{
-        font-family: 'JetBrains Mono', monospace;
-        font-size: 11px;
-        color: #8E8E93;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 8px;
-        display: block;
-    }}
-
-    /* СТАТИСТИКА (Возраст, Вес, Стаж) */
-    .stats-badges {{
-        display: flex;
-        gap: 8px;
-    }}
-    
-    .stat-badge {{
-        background-color: #F2F2F7;
-        padding: 4px 10px;
-        border-radius: 8px;
-        font-size: 11px;
-        font-weight: 700;
-        color: #3A3A3C;
+        line-height: 1.2;
         display: flex;
         align-items: center;
     }}
-
-    /* Метрики */
-    div[data-testid="stMetricValue"] {{
-        font-size: 30px !important;
-        font-weight: 800 !important;
-        color: #000000 !important;
+    
+    .rank-badge {{
+        height: 24px;
+        margin-left: 10px;
+        vertical-align: middle;
     }}
-    label[data-testid="stMetricLabel"] {{
-        font-size: 12px !important;
-        color: #8E8E93 !important;
-        font-weight: 600;
+    
+    .rank-text {{
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        color: #8E8E93;
+        font-weight: 700;
+        letter-spacing: 1px;
+        margin-bottom: 10px;
+        display: block;
     }}
-
-    /* Кнопки */
+    
+    .stats-row {{
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }}
+    
+    .stat-pill {{
+        background-color: #F2F2F7;
+        color: #3A3A3C;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+    }}
+    
+    /* КНОПКИ */
     div.stButton > button {{
         width: 100%;
         background-color: #1C1C1E;
         color: #FFFFFF;
-        border-radius: 14px;
+        border-radius: 12px;
         padding: 14px;
         font-weight: 600;
         border: none;
@@ -200,28 +173,22 @@ tenure = calculate_tenure(df)
 
 # --- 7. ИНТЕРФЕЙС ---
 
-# Хедер (HTML)
+# Хедер (HTML) - УПРОЩЕННАЯ СТРУКТУРА
 st.markdown(f"""
-    <div class="profile-header">
-        <div class="avatar-wrapper">
-            <div class="avatar-container">
-                <img src="{AVATAR_URL}" class="avatar-img">
-            </div>
-        </div>
-        <div class="user-info">
-            <div class="name-rank-row">
-                <span class="user-name">SERGEY</span>
-                <img src="{RANK_ICON}" class="rank-icon" title="Captain">
-            </div>
-            <span class="rank-title">CAPTAIN (O-3) // US ARMY</span>
-            
-            <div class="stats-badges">
-                <div class="stat-badge">🎂 {user_age} YEARS</div>
-                <div class="stat-badge">⚖️ {USER_WEIGHT_CURRENT} KG</div>
-                <div class="stat-badge">⏳ {tenure}</div>
-            </div>
+<div class="profile-card">
+    <div class="avatar-box">
+        <img src="{AVATAR_URL}" class="avatar-img">
+    </div>
+    <div class="info-box">
+        <h1>SERGEY <img src="{RANK_ICON}" class="rank-badge"></h1>
+        <span class="rank-text">CAPTAIN (O-3) // US ARMY</span>
+        <div class="stats-row">
+            <div class="stat-pill">🎂 {user_age} YEARS</div>
+            <div class="stat-pill">⚖️ {USER_WEIGHT_CURRENT} KG</div>
+            <div class="stat-pill">⏳ {tenure}</div>
         </div>
     </div>
+</div>
 """, unsafe_allow_html=True)
 
 # Меню
