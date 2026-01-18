@@ -22,7 +22,7 @@ AVATAR_URL = "https://i.ibb.co.com/TDhQXVTR/unnamed-3.jpg"
 USER_BIRTHDAY = date(1985, 2, 20)
 USER_WEIGHT_CURRENT = 85.0 
 
-# --- 3. СИСТЕМА ЗВАНИЙ ---
+# --- 3. СИСТЕМА ЗВАНИЙ (FULL ARMY) ---
 RANK_SYSTEM = [
     (0, 9, "PRIVATE RECRUIT", "PV1", "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Emblem_of_the_United_States_Department_of_the_Army.svg/100px-Emblem_of_the_United_States_Department_of_the_Army.svg.png"), 
     (10, 24, "PRIVATE (PV2)", "PV2", "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/US_Army_E2.svg/100px-US_Army_E2.svg.png"),
@@ -177,7 +177,7 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# --- 6. ЗАГРУЗКА ДАННЫХ ---
+# --- 6. ЗАГРУЗКА ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
@@ -188,25 +188,20 @@ try:
     raw_data = sheet.get_all_records()
     df = pd.DataFrame(raw_data) if raw_data else pd.DataFrame()
     
-    # Приводим данные к нужному типу для графиков
     if not df.empty:
-        # Пытаемся преобразовать вес и повторы в числа (если там есть текст, ставим 0)
         df['weight'] = pd.to_numeric(df['weight'], errors='coerce').fillna(0)
         df['reps'] = pd.to_numeric(df['reps'], errors='coerce').fillna(0)
-        # Приводим дату к формату даты
         df['date'] = pd.to_datetime(df['date'], errors='coerce')
-        # Убираем пустые даты
         df = df.dropna(subset=['date'])
         
 except Exception as e:
     df = pd.DataFrame()
-    st.error(f"Data Link Error: {e}")
 
 user_age = calculate_age(USER_BIRTHDAY)
 total_xp = len(df)
 rank = get_rank_data(total_xp)
 
-# --- 7. ПРОФИЛЬ ---
+# --- 7. UI ПРОФИЛЯ ---
 st.markdown(f"""
 <div class="profile-card">
 <div class="avatar-area"><img src="{AVATAR_URL}" class="avatar-img"></div>
@@ -242,124 +237,71 @@ selected = option_menu(
     }
 )
 
-# --- 9. РАЗДЕЛЫ ---
-
 if selected == "DASHBOARD":
-    
-    # Создаем вкладки для аналитики
     tab1, tab2, tab3 = st.tabs(["📊 OVERVIEW", "📈 PROGRESS", "🏆 RECORDS"])
-    
     with tab1:
         col1, col2 = st.columns(2)
         vol = 0
+        if not df.empty: vol = (df['weight'] * df['reps']).sum()
+        with col1: st.metric("TOTAL LOAD", f"{int(vol/1000)}k")
+        with col2: st.metric("MISSIONS", f"{total_xp}")
         if not df.empty:
-            vol = (df['weight'] * df['reps']).sum()
-        with col1: st.metric("TOTAL LOAD", f"{int(vol/1000)}k", help="Общий поднятый вес в кг")
-        with col2: st.metric("MISSIONS", f"{total_xp}", help="Количество записей в базе")
-        
-        if not df.empty:
-            st.markdown("##### VOLUME HISTORY")
-            # Группируем по дням
             daily = df.groupby(df['date'].dt.date).apply(lambda x: (x['weight']*x['reps']).sum()).reset_index(name='v')
             fig = px.area(daily, x='date', y='v', color_discrete_sequence=['#007AFF'])
             fig.update_layout(height=250, margin=dict(l=0,r=0,t=0,b=0), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
             st.plotly_chart(fig, use_container_width=True, config={'displayModeBar':False})
-        else:
-            st.info("No data available yet. Start training!")
-
     with tab2:
         if not df.empty:
-            st.caption("EXERCISE ANALYSIS")
-            # Список уникальных упражнений
             all_exercises = df['exercise'].unique().tolist()
             if all_exercises:
                 selected_ex = st.selectbox("Select Target", all_exercises)
-                
-                # Фильтруем данные
                 ex_data = df[df['exercise'] == selected_ex].sort_values('date')
-                
                 if not ex_data.empty:
-                    # График рабочего веса
                     fig2 = px.line(ex_data, x='date', y='weight', markers=True, title=f"{selected_ex} (Weight)", color_discrete_sequence=['#FF3B30'])
                     fig2.update_layout(height=300, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor='rgba(0,0,0,0)')
                     st.plotly_chart(fig2, use_container_width=True)
-            else:
-                st.warning("Exercise list is empty.")
-        else:
-            st.info("Log your first mission to see analytics.")
-
     with tab3:
         if not df.empty:
-            st.caption("PERSONAL RECORDS (PR)")
-            # Находим максимальный вес для каждого упражнения
-            # Группируем по упражнению -> берем макс вес -> сортируем
             records = df.groupby('exercise')['weight'].max().reset_index()
-            records.columns = ['EXERCISE', 'MAX WEIGHT (KG)']
-            records = records.sort_values('MAX WEIGHT (KG)', ascending=False).head(10) # Топ 10
-            
-            # Красивая таблица
-            st.dataframe(
-                records, 
-                use_container_width=True, 
-                hide_index=True,
-                column_config={
-                    "MAX WEIGHT (KG)": st.column_config.NumberColumn(format="%.1f kg")
-                }
-            )
-        else:
-            st.info("No records yet.")
+            records.columns = ['EXERCISE', 'MAX (KG)']
+            records = records.sort_values('MAX (KG)', ascending=False).head(10)
+            st.dataframe(records, use_container_width=True, hide_index=True)
 
 elif selected == "LOGBOOK":
-    st.caption("MISSION LOG")
+    st.caption("MISSION LOG (SELECT DATE FOR PAST MISSIONS)")
     with st.form("add"):
-        # Предустановленные упражнения + возможность ввода своего
-        common_exercises = ["Squat", "Bench Press", "Deadlift", "Overhead Press", "Pull Up", "Dumbbell Row"]
-        # Используем text_input с автодополнением (в новых версиях Streamlit нет чистого autocomplete, используем selectbox with custom option logic или просто text)
-        # Для простоты пока оставим text_input, но можно сделать selectbox с возможностью писать
-        ex = st.text_input("Exercise Name (e.g. Bench Press)")
+        # 🔥 КАЛЕНДАРЬ ДЛЯ ВЫБОРА ДАТЫ
+        c_date, c_name = st.columns([1, 2])
+        with c_date:
+            log_date = st.date_input("Mission Date", date.today())
+        with c_name:
+            ex = st.text_input("Exercise Name")
         
         c1, c2, c3 = st.columns(3)
-        w = c1.number_input("Weight (kg)", step=2.5, min_value=0.0)
-        r = c2.number_input("Reps", step=1, value=10, min_value=0)
-        rpe = c3.selectbox("RPE (Intensity)", [6,7,8,9,10])
-        note = st.text_area("Debrief Note")
+        w = c1.number_input("Weight (kg)", step=2.5)
+        r = c2.number_input("Reps", step=1, value=10)
+        rpe = c3.selectbox("RPE", [6,7,8,9,10])
+        note = st.text_area("Note")
         
         if st.form_submit_button("COMPLETE MISSION"):
             if ex:
                 try:
-                    # Дата как строка для Google Sheets
-                    date_str = datetime.now().strftime("%Y-%m-%d")
+                    # Используем выбранную дату, а не текущую
+                    date_str = log_date.strftime("%Y-%m-%d")
                     sheet.append_row([date_str, ex, w, r, rpe, "done", note])
                     st.success("Log Saved! +1 XP")
                     st.rerun()
                 except Exception as e: st.error(f"Error: {e}")
-            else:
-                st.error("Enter exercise name!")
 
 elif selected == "AI COACH":
     st.caption(f"INSTRUCTOR // {rank['abbr']}")
-    
-    # Инициализация чата
     if "messages" not in st.session_state: st.session_state.messages = []
-    
-    # Вывод истории
     for m in st.session_state.messages:
         with st.chat_message(m["role"]): st.markdown(m["content"])
-        
-    # Ввод вопроса
     if p := st.chat_input("Request Intel..."):
         st.session_state.messages.append({"role": "user", "content": p})
         with st.chat_message("user"): st.markdown(p)
-        
-        # Контекст для ИИ
-        context = f"You are a strict tactical fitness instructor. User rank: {rank['title']}. Age: {user_age}. Current Weight: {USER_WEIGHT_CURRENT}kg."
-        if not df.empty:
-            # Даем ИИ немного статистики, чтобы он был умнее
-            last_workouts = df.tail(3).to_string()
-            context += f" Last 3 missions: {last_workouts}"
-            
         model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
-        res = model.generate_content(f"{context} User asks: {p}")
-        
+        res = model.generate_content(f"You are a drill sergeant. User rank: {rank['title']}. Question: {p}")
         with st.chat_message("assistant"): st.markdown(res.text)
         st.session_state.messages.append({"role": "assistant", "content": res.text})
