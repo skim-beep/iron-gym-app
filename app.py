@@ -18,7 +18,7 @@ st.set_page_config(
 
 # --- 2. ССЫЛКА НА АВАТАР (Военный оператор) ---
 # Я поставил качественный референс. Если у тебя есть своя ссылка - замени её здесь.
-AVATAR_URL = "https://cdn-icons-png.flaticon.com/512/3572/3572166.png" 
+AVATAR_URL = "https://i.pinimg.com/736x/8b/44/49/8b444907994406263702b8d4e92a2334.jpg" 
 
 # --- 3. CSS СТИЛИ (ДИЗАЙН) ---
 st.markdown(f"""
