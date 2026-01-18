@@ -16,30 +16,23 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. НАСТРОЙКИ ПОЛЬЗОВАТЕЛЯ ---
+# --- 2. НАСТРОЙКИ ---
 AVATAR_URL = "https://i.ibb.co.com/TDhQXVTR/unnamed-3.jpg"
 USER_BIRTHDAY = date(1985, 2, 20)
 USER_WEIGHT_CURRENT = 85.0 
 
-# --- 3. СИСТЕМА ЗВАНИЙ (US ARMY) ---
-# (Мин XP, Звание, Аббр, Иконка)
+# --- 3. ЗВАНИЯ ---
 RANK_SYSTEM = [
-    # ENLISTED
-    # PV1 не имеет шеврона, ставим Логотип Армии
-    (0, 9, "PRIVATE RECRUIT", "PV1", "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Emblem_of_the_United_States_Department_of_the_Army.svg/150px-Emblem_of_the_United_States_Department_of_the_Army.svg.png"), 
-    (10, 24, "PRIVATE (PV2)", "PV2", "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/US_Army_E2.svg/150px-US_Army_E2.svg.png"),
-    (25, 49, "PRIVATE 1ST CLASS", "PFC", "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/US_Army_E3.svg/150px-US_Army_E3.svg.png"),
-    (50, 74, "SPECIALIST", "SPC", "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/US_Army_E4_SPC.svg/150px-US_Army_E4_SPC.svg.png"),
-    (75, 99, "SERGEANT", "SGT", "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/US_Army_E5.svg/150px-US_Army_E5.svg.png"),
-    (100, 129, "STAFF SERGEANT", "SSG", "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/US_Army_E6.svg/150px-US_Army_E6.svg.png"),
-    (130, 159, "SGT FIRST CLASS", "SFC", "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/US_Army_E7.svg/150px-US_Army_E7.svg.png"),
-    (160, 189, "MASTER SERGEANT", "MSG", "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/US_Army_E8_MSG.svg/150px-US_Army_E8_MSG.svg.png"),
-    
-    # OFFICERS (примеры)
-    (190, 9999, "CAPTAIN", "CPT", "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/US-Army-O3-Collar.svg/150px-US-Army-O3-Collar.svg.png"),
+    # (Мин XP, Макс XP, Название, Аббр, Иконка)
+    (0, 9, "PRIVATE RECRUIT", "PV1", "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Emblem_of_the_United_States_Department_of_the_Army.svg/120px-Emblem_of_the_United_States_Department_of_the_Army.svg.png"), 
+    (10, 24, "PRIVATE", "PV2", "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/US_Army_E2.svg/120px-US_Army_E2.svg.png"),
+    (25, 49, "PFC", "PFC", "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/US_Army_E3.svg/120px-US_Army_E3.svg.png"),
+    (50, 74, "SPECIALIST", "SPC", "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/US_Army_E4_SPC.svg/120px-US_Army_E4_SPC.svg.png"),
+    (75, 99, "SERGEANT", "SGT", "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/US_Army_E5.svg/120px-US_Army_E5.svg.png"),
+    (100, 129, "STAFF SGT", "SSG", "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/US_Army_E6.svg/120px-US_Army_E6.svg.png"),
+    (130, 9999, "SGT 1ST CLASS", "SFC", "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/US_Army_E7.svg/120px-US_Army_E7.svg.png"),
 ]
 
-# --- 4. ЛОГИКА ---
 def get_rank_data(xp):
     for r_min, r_max, title, abbr, icon in RANK_SYSTEM:
         if r_min <= xp <= r_max:
@@ -47,17 +40,14 @@ def get_rank_data(xp):
             current = xp - r_min
             percent = int((current / needed) * 100)
             to_go = r_max - xp + 1
-            return {
-                "title": title, "abbr": abbr, "icon": icon,
-                "progress": percent, "next_xp": to_go
-            }
-    return {"title": "LEGEND", "abbr": "GEN", "icon": RANK_SYSTEM[-1][3], "progress": 100, "next_xp": 0}
+            return {"title": title, "abbr": abbr, "icon": icon, "progress": percent, "next_xp": to_go}
+    return {"title": "LEGEND", "abbr": "GOD", "icon": RANK_SYSTEM[-1][4], "progress": 100, "next_xp": 0}
 
 def calculate_age(birthdate):
     today = date.today()
     return today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
 
-# --- 5. CSS (НЕОНОВЫЙ ДИЗАЙН) ---
+# --- 4. CSS (НЕОНОВЫЙ СТИЛЬ) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap');
@@ -70,16 +60,14 @@ st.markdown(f"""
         background-color: #FFFFFF;
         border-radius: 20px;
         padding: 20px;
-        box-shadow: 0px 4px 25px rgba(0,0,0,0.05);
+        box-shadow: 0px 4px 20px rgba(0,0,0,0.05);
     }}
 
-    /* ПРОФИЛЬ */
     .profile-card {{
         background-color: #FFFFFF;
         padding: 20px;
         border-radius: 24px;
-        /* Легкое свечение всей карточки */
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
+        box-shadow: 0 4px 25px rgba(0,0,0,0.05);
         margin-bottom: 25px;
         display: flex;
         flex-direction: row;
@@ -95,93 +83,78 @@ st.markdown(f"""
         border: 2px solid #D4AF37;
         flex-shrink: 0;
         margin-right: 20px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }}
     
     .avatar-img {{ width: 100%; height: 100%; object-fit: cover; }}
-    
     .info-area {{ flex-grow: 1; width: 100%; }}
     
     .user-name {{
         font-size: 26px;
         font-weight: 900;
-        color: #1C1C1E; /* Черное имя для контраста */
+        color: #1C1C1E;
         line-height: 1;
-        margin-bottom: 4px;
+        margin-bottom: 5px;
     }}
     
-    /* ЗВАНИЕ */
     .rank-row {{
         display: flex;
-        justify-content: space-between;
         align-items: center;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
     }}
     
     .rank-title {{
         font-family: 'Black Ops One', cursive;
         font-size: 14px;
-        color: #8E8E93;
+        color: #D4AF37; /* Золотой цвет звания */
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        margin-right: 10px;
     }}
     
     .rank-icon-img {{
-        height: 40px; /* Сделал КРУПНЕЕ */
+        height: 30px;
         width: auto;
-        object-fit: contain;
-        filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));
     }}
     
-    /* 🔥🔥 PROGRESS BAR (GLOW EFFECT) 🔥🔥 */
+    /* 🔥 СВЕТЯЩИЙСЯ ПРОГРЕСС БАР 🔥 */
     .progress-track {{
         width: 100%;
-        height: 10px; /* Чуть толще */
-        background-color: #E0E0E0;
-        border-radius: 5px;
-        margin-bottom: 8px;
+        height: 8px;
+        background-color: #E5E5EA;
+        border-radius: 4px;
+        margin-bottom: 5px;
         overflow: hidden;
-        border: 1px solid rgba(0,0,0,0.05);
     }}
     
     .progress-fill {{
         height: 100%;
-        border-radius: 5px;
-        /* Градиент Cyan -> Blue */
+        border-radius: 4px;
+        /* Неоновый градиент */
         background: linear-gradient(90deg, #00C6FF 0%, #0072FF 100%);
         /* Свечение */
-        box-shadow: 0 0 10px #00C6FF, 0 0 20px rgba(0, 114, 255, 0.4);
-        /* Анимация движения */
-        background-size: 200% 100%;
-        animation: gradientMove 3s linear infinite;
+        box-shadow: 0 0 10px rgba(0, 198, 255, 0.7);
         transition: width 0.5s ease-in-out;
-    }}
-
-    @keyframes gradientMove {{
-        0% {{ background-position: 100% 0; }}
-        100% {{ background-position: 0 0; }}
     }}
     
     .xp-text {{
-        font-size: 11px;
-        color: #0072FF; /* Цвет текста под стать бару */
-        font-weight: 800;
+        font-size: 10px;
+        color: #0072FF;
+        font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
-        float: right; /* Текст справа */
+        float: right;
     }}
     
-    .stats-row {{ display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; }}
+    .stats-row {{ display: flex; gap: 8px; flex-wrap: wrap; margin-top: 15px; }}
     
     .stat-badge {{
         background-color: #F2F2F7;
-        padding: 5px 12px;
-        border-radius: 8px;
+        padding: 4px 10px;
+        border-radius: 6px;
         font-size: 11px;
         font-weight: 700;
         color: #3A3A3C;
     }}
-
+    
+    /* КНОПКИ */
     div.stButton > button {{
         width: 100%;
         background-color: #1C1C1E;
@@ -190,19 +163,16 @@ st.markdown(f"""
         padding: 14px;
         font-weight: 600;
         border: none;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }}
     </style>
 """, unsafe_allow_html=True)
 
-# --- 6. ПОДКЛЮЧЕНИЕ ---
+# --- 5. ДАННЫЕ ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(
-        json.loads(st.secrets["service_account_json"], strict=False), scope
-    )
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(json.loads(st.secrets["service_account_json"], strict=False), scope)
     client = gspread.authorize(creds)
     sheet = client.open("IRON_GYM_DB").sheet1
     data = sheet.get_all_records()
@@ -210,45 +180,34 @@ try:
 except:
     df = pd.DataFrame()
 
-# --- 7. РАСЧЕТ ---
 user_age = calculate_age(USER_BIRTHDAY)
 total_xp = len(df) if not df.empty else 0 
 rank = get_rank_data(total_xp)
 
-# --- 8. ИНТЕРФЕЙС ---
-
-# HTML
+# --- 6. HTML ПРОФИЛЯ (БЕЗ ОТСТУПОВ!) ---
+# ВАЖНО: Весь HTML написан в одну строку или прижат влево, чтобы не ломался
 st.markdown(f"""
 <div class="profile-card">
-    <div class="avatar-area">
-        <img src="{AVATAR_URL}" class="avatar-img">
-    </div>
-    <div class="info-area">
-        <div class="user-name">SERGEY</div>
-        
-        <div class="rank-row">
-            <span class="rank-title">{rank['title']} // {rank['abbr']}</span>
-            <img src="{rank['icon']}" class="rank-icon-img">
-        </div>
-        
-        <div class="progress-track">
-            <div class="progress-fill" style="width: {rank['progress']}%;"></div>
-        </div>
-        
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-             <span style="font-size: 10px; color: #888; font-weight: 600;">LEVEL PROGRESS</span>
-             <span class="xp-text">{rank['next_xp']} MISSIONS TO PROMOTION</span>
-        </div>
-
-        <div class="stats-row">
-            <div class="stat-badge">🎂 {user_age} YRS</div>
-            <div class="stat-badge">⚖️ {USER_WEIGHT_CURRENT} KG</div>
-        </div>
-    </div>
+<div class="avatar-area"><img src="{AVATAR_URL}" class="avatar-img"></div>
+<div class="info-area">
+<div class="user-name">SERGEY</div>
+<div class="rank-row">
+<span class="rank-title">{rank['title']} // {rank['abbr']}</span>
+<img src="{rank['icon']}" class="rank-icon-img">
+</div>
+<div class="progress-track">
+<div class="progress-fill" style="width: {rank['progress']}%;"></div>
+</div>
+<span class="xp-text">NEXT RANK IN: {rank['next_xp']} MISSIONS</span>
+<div class="stats-row">
+<div class="stat-badge">🎂 {user_age} YRS</div>
+<div class="stat-badge">⚖️ {USER_WEIGHT_CURRENT} KG</div>
+</div>
+</div>
 </div>
 """, unsafe_allow_html=True)
 
-# Меню
+# --- 7. МЕНЮ ---
 selected = option_menu(
     menu_title=None,
     options=["DASHBOARD", "LOGBOOK", "AI COACH"],
@@ -270,7 +229,6 @@ if selected == "DASHBOARD":
         df['weight'] = pd.to_numeric(df['weight'], errors='coerce').fillna(0)
         df['reps'] = pd.to_numeric(df['reps'], errors='coerce').fillna(0)
         vol = (df['weight'] * df['reps']).sum()
-        
     with col1: st.metric("TOTAL LOAD", f"{int(vol/1000)}k")
     with col2: st.metric("MISSIONS", f"{total_xp}")
     
@@ -291,19 +249,17 @@ elif selected == "LOGBOOK":
         rpe = c3.selectbox("RPE", [7,8,9,10])
         note = st.text_area("Note")
         if st.form_submit_button("COMPLETE MISSION"):
-            if ex:
-                try:
-                    sheet.append_row([datetime.now().strftime("%Y-%m-%d"), ex, w, r, rpe, "done", note])
-                    st.success(f"Log Saved! +1 XP")
-                    st.rerun() 
-                except: st.error("Error")
+            try:
+                sheet.append_row([datetime.now().strftime("%Y-%m-%d"), ex, w, r, rpe, "done", note])
+                st.success("Log Saved! +1 XP")
+                st.rerun()
+            except: st.error("Error")
 
 elif selected == "AI COACH":
     st.caption(f"INSTRUCTOR // {rank['abbr']}")
     if "messages" not in st.session_state: st.session_state.messages = []
     for m in st.session_state.messages:
         with st.chat_message(m["role"]): st.markdown(m["content"])
-        
     if p := st.chat_input("Question..."):
         st.session_state.messages.append({"role": "user", "content": p})
         with st.chat_message("user"): st.markdown(p)
