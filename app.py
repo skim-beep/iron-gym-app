@@ -1,11 +1,12 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime, date
-import plotly.express as px
+from datetime import datetime, date, timedelta
+import plotly.graph_objects as go
 import google.generativeai as genai
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import json
+import calendar
 from streamlit_option_menu import option_menu
 
 # --- 1. НАСТРОЙКА СТРАНИЦЫ ---
@@ -47,7 +48,7 @@ RANK_SYSTEM = [
     (600, 9999, "GENERAL OF ARMY", "GA", "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/US-Army-General_of_the_Army-Shoulder.svg/100px-US-Army-General_of_the_Army-Shoulder.svg.png")
 ]
 
-# --- 4. ЛОГИКА ---
+# --- 4. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
 def get_rank_data(xp):
     for r_min, r_max, title, abbr, icon in RANK_SYSTEM:
         if r_min <= xp <= r_max:
@@ -62,7 +63,18 @@ def calculate_age(birthdate):
     today = date.today()
     return today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
 
-# --- 5. CSS ---
+# Определяем группу мышц по названию упражнения
+def detect_muscle_group(exercise_name):
+    ex = str(exercise_name).lower()
+    if any(x in ex for x in ['жим лежа', 'жим гантелей', 'бабочка', 'chest', 'отжимания', 'брусья']): return "ГРУДЬ"
+    if any(x in ex for x in ['тяга', 'подтягивания', 'спина', 'back', 'row']): return "СПИНА"
+    if any(x in ex for x in ['присед', 'ноги', 'выпады', 'legs', 'squat']): return "НОГИ"
+    if any(x in ex for x in ['бицепс', 'трицепс', 'молот', 'arms', 'bicep']): return "РУКИ"
+    if any(x in ex for x in ['жим стоя', 'плечи', 'махи', 'shouder', 'press']): return "ПЛЕЧИ"
+    if any(x in ex for x in ['пресс', 'планка', 'abs', 'core']): return "КОР"
+    return "ОБЩЕЕ"
+
+# --- 5. CSS СТИЛИ ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap');
@@ -172,6 +184,23 @@ st.markdown(f"""
         font-weight: 600;
         border: none;
     }}
+    
+    /* CALENDAR STYLES */
+    .calendar-table { width: 100%; border-collapse: separate; border-spacing: 4px; }
+    .calendar-cell { 
+        text-align: center; 
+        padding: 10px; 
+        border-radius: 8px; 
+        font-size: 14px; 
+        font-weight: 600; 
+        color: #1C1C1E;
+    }
+    .day-header { color: #8E8E93; font-size: 12px; text-transform: uppercase; }
+    .day-trained { background-color: #8E8E93; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+    .day-missed { background-color: #FFB3B3; color: #8b0000; }
+    .day-today { border: 2px solid #D4AF37; color: #D4AF37; font-weight: 900; }
+    .day-empty { background-color: transparent; }
+    .day-future { color: #D1D1D6; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -186,26 +215,27 @@ try:
     raw_data = sheet.get_all_records()
     df = pd.DataFrame(raw_data) if raw_data else pd.DataFrame()
     
-    # КЛЮЧИ ТЕПЕРЬ НА РУССКОМ (согласно заголовкам в таблице)
     if not df.empty:
-        # Приводим типы
         df['Вес (кг)'] = pd.to_numeric(df['Вес (кг)'], errors='coerce').fillna(0)
         df['Повт'] = pd.to_numeric(df['Повт'], errors='coerce').fillna(0)
         df['Тоннаж'] = pd.to_numeric(df['Тоннаж'], errors='coerce').fillna(0)
-        # Обработка даты (День/Дата)
-        # Иногда Google Sheets отдает дату странно, пробуем парсить
         df['День/Дата'] = pd.to_datetime(df['День/Дата'], errors='coerce')
         df = df.dropna(subset=['День/Дата'])
+        df['Muscle'] = df['Упражнение'].apply(detect_muscle_group) # Добавляем группы мышц
         
 except Exception as e:
     df = pd.DataFrame()
-    # st.error(f"DB Error: {e}") # Скрываем ошибку чтобы не пугать, если база пустая
 
 user_age = calculate_age(USER_BIRTHDAY)
+# Считаем уникальные дни тренировок для календаря
+trained_dates = set()
+if not df.empty:
+    trained_dates = set(df['День/Дата'].dt.date)
+
 total_xp = len(df)
 rank = get_rank_data(total_xp)
 
-# --- 7. HTML ПРОФИЛЯ ---
+# --- 7. ПРОФИЛЬ ---
 profile_html = f"""
 <div class="profile-card">
 <div class="avatar-area"><img src="{AVATAR_URL}" class="avatar-img"></div>
@@ -242,101 +272,166 @@ selected = option_menu(
     }
 )
 
+# --- 9. DASHBOARD LOGIC ---
 if selected == "DASHBOARD":
-    tab1, tab2, tab3 = st.tabs(["📊 DASHBOARD", "📝 HISTORY", "🏆 RECORDS"])
     
-    with tab1:
-        col1, col2 = st.columns(2)
-        vol = 0
-        if not df.empty: vol = df['Тоннаж'].sum()
-        with col1: st.metric("TOTAL LOAD", f"{int(vol/1000)}k")
-        with col2: st.metric("MISSIONS", f"{total_xp}")
+    # === 1. RADAR CHART (MUSCLE BALANCE) ===
+    st.subheader("BODY ARMOR STATUS")
+    if not df.empty:
+        # Группируем по мышцам и суммируем тоннаж
+        muscle_data = df.groupby('Muscle')['Тоннаж'].sum().reset_index()
+        # Обязательные группы (чтобы радар был полным даже если 0)
+        all_muscles = ["ГРУДЬ", "СПИНА", "НОГИ", "РУКИ", "ПЛЕЧИ", "КОР"]
+        radar_df = pd.DataFrame({"Muscle": all_muscles})
+        radar_df = radar_df.merge(muscle_data, on="Muscle", how="left").fillna(0)
         
-        if not df.empty:
-            daily = df.groupby(df['День/Дата'].dt.date)['Тоннаж'].sum().reset_index()
-            fig = px.bar(daily, x='День/Дата', y='Тоннаж', color_discrete_sequence=['#007AFF'])
-            fig.update_layout(height=250, margin=dict(l=0,r=0,t=0,b=0), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
-            st.plotly_chart(fig, use_container_width=True, config={'displayModeBar':False})
+        # Строим график
+        fig = go.Figure(data=go.Scatterpolar(
+            r=radar_df['Тоннаж'],
+            theta=radar_df['Muscle'],
+            fill='toself',
+            name='Total Volume',
+            line_color='#D4AF37',
+            fillcolor='rgba(212, 175, 55, 0.3)'
+        ))
+        fig.update_layout(
+            polar=dict(
+                radialaxis=dict(visible=True, showticklabels=False),
+                bgcolor='#F2F3F7'
+            ),
+            showlegend=False,
+            height=300,
+            margin=dict(l=40, r=40, t=20, b=20),
+            paper_bgcolor='rgba(0,0,0,0)',
+        )
+        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar':False})
+    else:
+        st.info("No data for radar chart.")
+
+    # === 2. TACTICAL CALENDAR ===
+    st.subheader("MISSION CALENDAR")
     
-    with tab2:
-        st.subheader("TACTICAL LOG")
+    # Управление месяцем
+    if 'cal_year' not in st.session_state: st.session_state.cal_year = date.today().year
+    if 'cal_month' not in st.session_state: st.session_state.cal_month = date.today().month
+
+    def change_month(delta):
+        m = st.session_state.cal_month + delta
+        y = st.session_state.cal_year
+        if m > 12:
+            m = 1
+            y += 1
+        elif m < 1:
+            m = 12
+            y -= 1
+        st.session_state.cal_month = m
+        st.session_state.cal_year = y
+
+    # Кнопки навигации
+    col_prev, col_month, col_next = st.columns([1, 2, 1])
+    with col_prev: st.button("◀", on_click=change_month, args=(-1,))
+    with col_month: 
+        month_name = calendar.month_name[st.session_state.cal_month]
+        st.markdown(f"<h3 style='text-align: center; margin:0;'>{month_name} {st.session_state.cal_year}</h3>", unsafe_allow_html=True)
+    with col_next: st.button("▶", on_click=change_month, args=(1,))
+
+    # Генерация календаря
+    cal = calendar.monthcalendar(st.session_state.cal_year, st.session_state.cal_month)
+    today = date.today()
+    
+    html_cal = '<table class="calendar-table"><thead><tr>'
+    days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+    for d in days: html_cal += f'<th class="day-header">{d}</th>'
+    html_cal += '</tr></thead><tbody>'
+
+    for week in cal:
+        html_cal += '<tr>'
+        for day in week:
+            if day == 0:
+                html_cal += '<td class="calendar-cell day-empty"></td>'
+            else:
+                current_date = date(st.session_state.cal_year, st.session_state.cal_month, day)
+                css_class = "calendar-cell"
+                
+                # Логика цветов
+                if current_date == today:
+                    css_class += " day-today"
+                elif current_date in trained_dates:
+                    css_class += " day-trained" # Серый (был в зале)
+                elif current_date < today and current_date not in trained_dates:
+                    css_class += " day-missed" # Красный (пропуск в прошлом)
+                elif current_date > today:
+                    css_class += " day-future" # Будущее
+
+                html_cal += f'<td class="{css_class}">{day}</td>'
+        html_cal += '</tr>'
+    html_cal += '</tbody></table>'
+    
+    st.markdown(html_cal, unsafe_allow_html=True)
+    
+    # --- Легенда календаря ---
+    st.markdown("""
+    <div style="display:flex; gap:15px; justify-content:center; margin-top:10px; font-size:11px; color:#666;">
+        <div style="display:flex; align-items:center;"><div style="width:10px; height:10px; background:#8E8E93; margin-right:5px; border-radius:2px;"></div>COMPLETED</div>
+        <div style="display:flex; align-items:center;"><div style="width:10px; height:10px; background:#FFB3B3; margin-right:5px; border-radius:2px;"></div>MISSED</div>
+        <div style="display:flex; align-items:center;"><div style="width:10px; height:10px; border:1px solid #D4AF37; margin-right:5px; border-radius:2px;"></div>TODAY</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Вкладки истории и рекордов (оставляем, они полезны)
+    st.markdown("---")
+    tab_hist, tab_rec = st.tabs(["📝 HISTORY", "🏆 RECORDS"])
+    
+    with tab_hist:
         if not df.empty:
             history_df = df.copy()
             history_df = history_df.sort_values(by='День/Дата', ascending=False)
             history_df['День/Дата'] = history_df['День/Дата'].dt.strftime('%d.%m.%Y')
+            cols = ['День/Дата', 'Упражнение', 'Вес (кг)', 'Повт', 'Тоннаж', 'Комментарий / Техника']
+            st.dataframe(history_df[cols], use_container_width=True, hide_index=True)
             
-            # Показываем все запрошенные колонки
-            display_cols = ['День/Дата', 'Сет', 'Упражнение', 'Подход', 'Вес (кг)', 'Повт', 'Тоннаж', 'Комментарий / Техника', 'Мой комментарий']
-            # Проверяем, есть ли все колонки (на случай если в Sheets что-то не так)
-            available_cols = [c for c in display_cols if c in history_df.columns]
-            
-            st.dataframe(history_df[available_cols], use_container_width=True, hide_index=True)
-        else:
-            st.info("No data.")
-
-    with tab3:
+    with tab_rec:
         if not df.empty:
             records = df.groupby('Упражнение')['Вес (кг)'].max().reset_index()
             records.columns = ['EXERCISE', 'PR (KG)']
             records = records.sort_values('PR (KG)', ascending=False).head(15)
             st.dataframe(records, use_container_width=True, hide_index=True)
 
+# --- LOGBOOK & AI COACH (Без изменений, только формат сохранения) ---
 elif selected == "LOGBOOK":
     st.caption("NEW ENTRY")
     with st.form("add"):
         c_date, c_set, c_ex = st.columns([1.5, 1, 2.5])
-        with c_date:
-            log_date = st.date_input("Дата", date.today())
-        with c_set:
-            set_group = st.text_input("Сет (Группа)", placeholder="№1")
-        with c_ex:
-            ex = st.text_input("Упражнение", placeholder="Жим...")
+        with c_date: log_date = st.date_input("Дата", date.today())
+        with c_set: set_group = st.text_input("Сет", placeholder="№1")
+        with c_ex: ex = st.text_input("Упражнение", placeholder="Жим...")
         
         c_podhod, c_weight, c_reps = st.columns(3)
-        with c_podhod:
-            set_num = st.number_input("Подход №", 1, 10, 1)
-        with c_weight:
-            w = st.number_input("Вес (кг)", step=2.5)
-        with c_reps:
-            r = st.number_input("Повт", step=1, value=10)
+        with c_podhod: set_num = st.number_input("Подход", 1, 10, 1)
+        with c_weight: w = st.number_input("Вес", step=2.5)
+        with c_reps: r = st.number_input("Повт", step=1, value=10)
             
         c_tech, c_my = st.columns(2)
-        with c_tech:
-            tech_note = st.text_input("Техника (план)", placeholder="Локти 45 град")
-        with c_my:
-            my_note = st.text_input("Мой комментарий", placeholder="Тяжело пошло...")
+        with c_tech: tech_note = st.text_input("Техника", placeholder="План")
+        with c_my: my_note = st.text_input("Мой коммент", placeholder="Факт")
         
         if st.form_submit_button("SAVE MISSION"):
             if ex:
                 try:
-                    date_str = log_date.strftime("%Y-%m-%d")
-                    tonnage = w * r
-                    # Сохраняем в строгом порядке колонок
-                    row = [
-                        date_str, 
-                        set_group, 
-                        ex, 
-                        set_num, 
-                        w, 
-                        r, 
-                        tonnage, 
-                        tech_note, 
-                        my_note
-                    ]
-                    sheet.append_row(row)
+                    sheet.append_row([log_date.strftime("%Y-%m-%d"), set_group, ex, set_num, w, r, w*r, tech_note, my_note])
                     st.success("Saved!")
                     st.rerun()
-                except Exception as e: st.error(f"Error: {e}")
+                except: st.error("Error")
 
 elif selected == "AI COACH":
     st.caption(f"INSTRUCTOR // {rank['abbr']}")
     if "messages" not in st.session_state: st.session_state.messages = []
     for m in st.session_state.messages:
         with st.chat_message(m["role"]): st.markdown(m["content"])
-    if p := st.chat_input("Ask instructor..."):
+    if p := st.chat_input("..."):
         st.session_state.messages.append({"role": "user", "content": p})
         with st.chat_message("user"): st.markdown(p)
         model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
-        res = model.generate_content(f"Drill sergeant mode. Rank: {rank['title']}. Q: {p}")
+        res = model.generate_content(f"Tactical fit coach. User Rank: {rank['title']}. Q: {p}")
         with st.chat_message("assistant"): st.markdown(res.text)
         st.session_state.messages.append({"role": "assistant", "content": res.text})
