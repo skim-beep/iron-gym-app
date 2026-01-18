@@ -89,14 +89,15 @@ st.markdown(f"""
         margin-bottom: 5px;
     }}
     
-    /* ЗОЛОТОЕ ИМЯ */
+    /* ЗОЛОТОЕ ИМЯ + СВЕЧЕНИЕ */
     .user-name {{
         font-size: 24px;
         font-weight: 900;
-        color: #D4AF37; /* GOLD COLOR */
+        color: #D4AF37; /* Основной золотой цвет */
         margin-right: 10px;
         line-height: 1;
-        text-shadow: 0px 1px 1px rgba(0,0,0,0.1); /* Легкая тень для объема */
+        /* Эффект свечения (Glow Effect) */
+        text-shadow: 0 0 10px #FFD700, 0 0 20px #D4AF37, 0 0 30px rgba(212, 175, 55, 0.4);
     }}
     
     .rank-img {{ width: 22px; height: auto; }}
