@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime, date
-import plotly.graph_objects as go
 import plotly.express as px
 import google.generativeai as genai
 import gspread
@@ -63,7 +62,7 @@ def calculate_age(birthdate):
     today = date.today()
     return today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
 
-# --- 5. CSS (ИСПРАВЛЕННЫЙ) ---
+# --- 5. CSS ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap');
@@ -79,7 +78,6 @@ st.markdown(f"""
         box-shadow: 0px 4px 20px rgba(0,0,0,0.05);
     }}
 
-    /* ПРОФИЛЬ - ИСПРАВЛЕН ГЛЮК */
     .profile-card {{
         background-color: #FFFFFF;
         padding: 20px;
@@ -188,25 +186,26 @@ try:
     raw_data = sheet.get_all_records()
     df = pd.DataFrame(raw_data) if raw_data else pd.DataFrame()
     
+    # КЛЮЧИ ТЕПЕРЬ НА РУССКОМ (согласно заголовкам в таблице)
     if not df.empty:
-        df['weight'] = pd.to_numeric(df['weight'], errors='coerce').fillna(0)
-        df['reps'] = pd.to_numeric(df['reps'], errors='coerce').fillna(0)
-        df['date'] = pd.to_datetime(df['date'], errors='coerce')
-        df = df.dropna(subset=['date'])
-        # Считаем тоннаж для каждого подхода
-        df['tonnage'] = df['weight'] * df['reps']
+        # Приводим типы
+        df['Вес (кг)'] = pd.to_numeric(df['Вес (кг)'], errors='coerce').fillna(0)
+        df['Повт'] = pd.to_numeric(df['Повт'], errors='coerce').fillna(0)
+        df['Тоннаж'] = pd.to_numeric(df['Тоннаж'], errors='coerce').fillna(0)
+        # Обработка даты (День/Дата)
+        # Иногда Google Sheets отдает дату странно, пробуем парсить
+        df['День/Дата'] = pd.to_datetime(df['День/Дата'], errors='coerce')
+        df = df.dropna(subset=['День/Дата'])
         
 except Exception as e:
     df = pd.DataFrame()
+    # st.error(f"DB Error: {e}") # Скрываем ошибку чтобы не пугать, если база пустая
 
 user_age = calculate_age(USER_BIRTHDAY)
-# Считаем XP как количество уникальных дней тренировок или просто записей? 
-# Армейская система: 1 Подход = это мало. 1 Тренировка (день) = 1 XP.
-# Но для мотивации давай оставим: 1 Запись (сет) = 1 XP. Так звания идут быстрее.
 total_xp = len(df)
 rank = get_rank_data(total_xp)
 
-# --- 7. HTML ПРОФИЛЯ (ИСПРАВЛЕННЫЙ) ---
+# --- 7. HTML ПРОФИЛЯ ---
 profile_html = f"""
 <div class="profile-card">
 <div class="avatar-area"><img src="{AVATAR_URL}" class="avatar-img"></div>
@@ -244,52 +243,40 @@ selected = option_menu(
 )
 
 if selected == "DASHBOARD":
-    # 3 Вкладки: Обзор, История (Как в Excel), Графики
     tab1, tab2, tab3 = st.tabs(["📊 DASHBOARD", "📝 HISTORY", "🏆 RECORDS"])
     
     with tab1:
         col1, col2 = st.columns(2)
         vol = 0
-        if not df.empty: vol = df['tonnage'].sum()
+        if not df.empty: vol = df['Тоннаж'].sum()
         with col1: st.metric("TOTAL LOAD", f"{int(vol/1000)}k")
-        with col2: st.metric("MISSIONS COMPLETED", f"{total_xp}")
+        with col2: st.metric("MISSIONS", f"{total_xp}")
         
         if not df.empty:
-            daily = df.groupby(df['date'].dt.date)['tonnage'].sum().reset_index()
-            fig = px.bar(daily, x='date', y='tonnage', color_discrete_sequence=['#007AFF'])
+            daily = df.groupby(df['День/Дата'].dt.date)['Тоннаж'].sum().reset_index()
+            fig = px.bar(daily, x='День/Дата', y='Тоннаж', color_discrete_sequence=['#007AFF'])
             fig.update_layout(height=250, margin=dict(l=0,r=0,t=0,b=0), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
             st.plotly_chart(fig, use_container_width=True, config={'displayModeBar':False})
     
     with tab2:
-        st.subheader("TACTICAL LOG (HISTORY)")
+        st.subheader("TACTICAL LOG")
         if not df.empty:
-            # Делаем копию для красивого отображения
             history_df = df.copy()
-            # Сортируем: новые сверху
-            history_df = history_df.sort_values(by='date', ascending=False)
-            # Форматируем дату
-            history_df['date'] = history_df['date'].dt.strftime('%d.%m.%Y')
+            history_df = history_df.sort_values(by='День/Дата', ascending=False)
+            history_df['День/Дата'] = history_df['День/Дата'].dt.strftime('%d.%m.%Y')
             
-            # Выбираем и переименовываем колонки как в твоем Excel
-            display_df = history_df[['date', 'exercise', 'weight', 'reps', 'tonnage', 'rpe', 'note']]
-            display_df.columns = ['ДАТА', 'УПРАЖНЕНИЕ', 'ВЕС', 'ПОВТ', 'ТОННАЖ', 'RPE', 'ЗАМЕТКА']
+            # Показываем все запрошенные колонки
+            display_cols = ['День/Дата', 'Сет', 'Упражнение', 'Подход', 'Вес (кг)', 'Повт', 'Тоннаж', 'Комментарий / Техника', 'Мой комментарий']
+            # Проверяем, есть ли все колонки (на случай если в Sheets что-то не так)
+            available_cols = [c for c in display_cols if c in history_df.columns]
             
-            # Отображаем таблицу на всю ширину
-            st.dataframe(
-                display_df, 
-                use_container_width=True,
-                hide_index=True,
-                column_config={
-                    "ВЕС": st.column_config.NumberColumn(format="%.1f kg"),
-                    "ТОННАЖ": st.column_config.NumberColumn(format="%d"),
-                }
-            )
+            st.dataframe(history_df[available_cols], use_container_width=True, hide_index=True)
         else:
-            st.info("No mission data found.")
+            st.info("No data.")
 
     with tab3:
         if not df.empty:
-            records = df.groupby('exercise')['weight'].max().reset_index()
+            records = df.groupby('Упражнение')['Вес (кг)'].max().reset_index()
             records.columns = ['EXERCISE', 'PR (KG)']
             records = records.sort_values('PR (KG)', ascending=False).head(15)
             st.dataframe(records, use_container_width=True, hide_index=True)
@@ -297,24 +284,46 @@ if selected == "DASHBOARD":
 elif selected == "LOGBOOK":
     st.caption("NEW ENTRY")
     with st.form("add"):
-        c_date, c_name = st.columns([1, 2])
+        c_date, c_set, c_ex = st.columns([1.5, 1, 2.5])
         with c_date:
-            log_date = st.date_input("Date", date.today())
-        with c_name:
-            # Можно сделать selectbox если наберется база
-            ex = st.text_input("Exercise", placeholder="e.g. Bench Press")
+            log_date = st.date_input("Дата", date.today())
+        with c_set:
+            set_group = st.text_input("Сет (Группа)", placeholder="№1")
+        with c_ex:
+            ex = st.text_input("Упражнение", placeholder="Жим...")
         
-        c1, c2, c3 = st.columns(3)
-        w = c1.number_input("Weight", step=2.5)
-        r = c2.number_input("Reps", step=1, value=10)
-        rpe = c3.selectbox("RPE", [6,7,8,9,10])
-        note = st.text_area("Notes (e.g. 'Локти 45 град')")
+        c_podhod, c_weight, c_reps = st.columns(3)
+        with c_podhod:
+            set_num = st.number_input("Подход №", 1, 10, 1)
+        with c_weight:
+            w = st.number_input("Вес (кг)", step=2.5)
+        with c_reps:
+            r = st.number_input("Повт", step=1, value=10)
+            
+        c_tech, c_my = st.columns(2)
+        with c_tech:
+            tech_note = st.text_input("Техника (план)", placeholder="Локти 45 град")
+        with c_my:
+            my_note = st.text_input("Мой комментарий", placeholder="Тяжело пошло...")
         
         if st.form_submit_button("SAVE MISSION"):
             if ex:
                 try:
                     date_str = log_date.strftime("%Y-%m-%d")
-                    sheet.append_row([date_str, ex, w, r, rpe, "done", note])
+                    tonnage = w * r
+                    # Сохраняем в строгом порядке колонок
+                    row = [
+                        date_str, 
+                        set_group, 
+                        ex, 
+                        set_num, 
+                        w, 
+                        r, 
+                        tonnage, 
+                        tech_note, 
+                        my_note
+                    ]
+                    sheet.append_row(row)
                     st.success("Saved!")
                     st.rerun()
                 except Exception as e: st.error(f"Error: {e}")
@@ -328,6 +337,6 @@ elif selected == "AI COACH":
         st.session_state.messages.append({"role": "user", "content": p})
         with st.chat_message("user"): st.markdown(p)
         model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
-        res = model.generate_content(f"You are a tough army drill sergeant. User rank: {rank['title']}. Question: {p}")
+        res = model.generate_content(f"Drill sergeant mode. Rank: {rank['title']}. Q: {p}")
         with st.chat_message("assistant"): st.markdown(res.text)
         st.session_state.messages.append({"role": "assistant", "content": res.text})
