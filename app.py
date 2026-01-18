@@ -21,41 +21,25 @@ AVATAR_URL = "https://i.ibb.co.com/TDhQXVTR/unnamed-3.jpg"
 USER_BIRTHDAY = date(1985, 2, 20)
 USER_WEIGHT_CURRENT = 85.0 
 
-# --- 3. ПОЛНАЯ ТАБЛИЦА ЗВАНИЙ (US ARMY) ---
-# Структура: (Мин. XP, Звание, Аббревиатура, Ссылка на иконку)
+# --- 3. СИСТЕМА ЗВАНИЙ (US ARMY) ---
+# (Мин XP, Звание, Аббр, Иконка)
 RANK_SYSTEM = [
-    # --- ENLISTED (РЯДОВЫЕ И СЕРЖАНТЫ) ---
-    (0, 9, "PRIVATE RECRUIT", "PV1", "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/US_Army_E2.svg/160px-US_Army_E2.svg.png"),
-    (10, 24, "PRIVATE FIRST CLASS", "PFC", "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/US_Army_E3.svg/160px-US_Army_E3.svg.png"),
-    (25, 49, "SPECIALIST", "SPC", "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/US_Army_E4_SPC.svg/160px-US_Army_E4_SPC.svg.png"),
-    (50, 74, "SERGEANT", "SGT", "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/US_Army_E5.svg/160px-US_Army_E5.svg.png"),
-    (75, 99, "STAFF SERGEANT", "SSG", "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/US_Army_E6.svg/160px-US_Army_E6.svg.png"),
-    (100, 129, "SGT FIRST CLASS", "SFC", "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/US_Army_E7.svg/160px-US_Army_E7.svg.png"),
-    (130, 159, "MASTER SERGEANT", "MSG", "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/US_Army_E8_MSG.svg/160px-US_Army_E8_MSG.svg.png"),
-    (160, 189, "SERGEANT MAJOR", "SGM", "https://upload.wikimedia.org/wikipedia/commons/thumb/fa/US_Army_E9_SGM.svg/160px-US_Army_E9_SGM.svg.png"),
-    (190, 219, "COMMAND SGT MAJOR", "CSM", "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/US_Army_E9_CSM.svg/160px-US_Army_E9_CSM.svg.png"),
-    (220, 249, "SGT MAJOR OF ARMY", "SMA", "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f0/US_Army_E9_SMA.svg/160px-US_Army_E9_SMA.svg.png"),
-
-    # --- WARRANT OFFICERS (УОРЕНТ-ОФИЦЕРЫ) ---
-    (250, 274, "WARRANT OFFICER 1", "WO1", "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/US_Army_WO1.svg/60px-US_Army_WO1.svg.png"),
-    (275, 299, "CHIEF WARRANT 2", "CW2", "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/US_Army_CW2.svg/60px-US_Army_CW2.svg.png"),
-    (300, 319, "CHIEF WARRANT 5", "CW5", "https://upload.wikimedia.org/wikipedia/commons/thumb/6/63/US_Army_CW5.svg/60px-US_Army_CW5.svg.png"),
-
-    # --- OFFICERS (ОФИЦЕРЫ) ---
-    (320, 339, "2ND LIEUTENANT", "2LT", "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/US-Army-O1-Shoulder.svg/120px-US-Army-O1-Shoulder.svg.png"),
-    (340, 359, "1ST LIEUTENANT", "1LT", "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/US-Army-O2-Shoulder.svg/120px-US-Army-O2-Shoulder.svg.png"),
-    (360, 389, "CAPTAIN", "CPT", "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/US-Army-O3-Collar.svg/160px-US-Army-O3-Collar.svg.png"),
-    (390, 419, "MAJOR", "MAJ", "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/US-Army-O4-Shoulder.svg/160px-US-Army-O4-Shoulder.svg.png"),
-    (420, 449, "LT COLONEL", "LTC", "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/US-Army-O5-Shoulder.svg/160px-US-Army-O5-Shoulder.svg.png"),
-    (450, 479, "COLONEL", "COL", "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/US-Army-O6-Shoulder.svg/160px-US-Army-O6-Shoulder.svg.png"),
+    # ENLISTED
+    # PV1 не имеет шеврона, ставим Логотип Армии
+    (0, 9, "PRIVATE RECRUIT", "PV1", "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Emblem_of_the_United_States_Department_of_the_Army.svg/150px-Emblem_of_the_United_States_Department_of_the_Army.svg.png"), 
+    (10, 24, "PRIVATE (PV2)", "PV2", "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/US_Army_E2.svg/150px-US_Army_E2.svg.png"),
+    (25, 49, "PRIVATE 1ST CLASS", "PFC", "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/US_Army_E3.svg/150px-US_Army_E3.svg.png"),
+    (50, 74, "SPECIALIST", "SPC", "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/US_Army_E4_SPC.svg/150px-US_Army_E4_SPC.svg.png"),
+    (75, 99, "SERGEANT", "SGT", "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/US_Army_E5.svg/150px-US_Army_E5.svg.png"),
+    (100, 129, "STAFF SERGEANT", "SSG", "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/US_Army_E6.svg/150px-US_Army_E6.svg.png"),
+    (130, 159, "SGT FIRST CLASS", "SFC", "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ef/US_Army_E7.svg/150px-US_Army_E7.svg.png"),
+    (160, 189, "MASTER SERGEANT", "MSG", "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/US_Army_E8_MSG.svg/150px-US_Army_E8_MSG.svg.png"),
     
-    # --- GENERALS (ГЕНЕРАЛЫ) ---
-    (480, 499, "BRIGADIER GENERAL", "BG", "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/US-Army-O7-Shoulder.svg/160px-US-Army-O7-Shoulder.svg.png"),
-    (500, 524, "MAJOR GENERAL", "MG", "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/US-Army-O8-Shoulder.svg/160px-US-Army-O8-Shoulder.svg.png"),
-    (525, 9999, "GENERAL OF THE ARMY", "GA", "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/US-Army-General_of_the_Army-Shoulder.svg/160px-US-Army-General_of_the_Army-Shoulder.svg.png")
+    # OFFICERS (примеры)
+    (190, 9999, "CAPTAIN", "CPT", "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/US-Army-O3-Collar.svg/150px-US-Army-O3-Collar.svg.png"),
 ]
 
-# --- 4. ЛОГИКА РАСЧЕТА РАНГА ---
+# --- 4. ЛОГИКА ---
 def get_rank_data(xp):
     for r_min, r_max, title, abbr, icon in RANK_SYSTEM:
         if r_min <= xp <= r_max:
@@ -65,20 +49,18 @@ def get_rank_data(xp):
             to_go = r_max - xp + 1
             return {
                 "title": title, "abbr": abbr, "icon": icon,
-                "progress": percent, "next_xp": to_go, "color": "#D4AF37"
+                "progress": percent, "next_xp": to_go
             }
-    # Если выше максимума
-    return {"title": "LEGEND", "abbr": "GOD", "icon": RANK_SYSTEM[-1][4], "progress": 100, "next_xp": 0, "color": "#FF3B30"}
+    return {"title": "LEGEND", "abbr": "GEN", "icon": RANK_SYSTEM[-1][3], "progress": 100, "next_xp": 0}
 
 def calculate_age(birthdate):
     today = date.today()
     return today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
 
-# --- 5. CSS СТИЛИ ---
+# --- 5. CSS (НЕОНОВЫЙ ДИЗАЙН) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap');
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap');
 
     .stApp {{ background-color: #F2F3F7; font-family: 'Inter', sans-serif; }}
@@ -88,7 +70,7 @@ st.markdown(f"""
         background-color: #FFFFFF;
         border-radius: 20px;
         padding: 20px;
-        box-shadow: 0px 4px 20px rgba(0,0,0,0.05);
+        box-shadow: 0px 4px 25px rgba(0,0,0,0.05);
     }}
 
     /* ПРОФИЛЬ */
@@ -96,7 +78,8 @@ st.markdown(f"""
         background-color: #FFFFFF;
         padding: 20px;
         border-radius: 24px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        /* Легкое свечение всей карточки */
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
         margin-bottom: 25px;
         display: flex;
         flex-direction: row;
@@ -112,7 +95,7 @@ st.markdown(f"""
         border: 2px solid #D4AF37;
         flex-shrink: 0;
         margin-right: 20px;
-        background: #000;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }}
     
     .avatar-img {{ width: 100%; height: 100%; object-fit: cover; }}
@@ -122,14 +105,15 @@ st.markdown(f"""
     .user-name {{
         font-size: 26px;
         font-weight: 900;
-        color: #D4AF37;
+        color: #1C1C1E; /* Черное имя для контраста */
         line-height: 1;
-        margin-bottom: 2px;
-        text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+        margin-bottom: 4px;
     }}
     
+    /* ЗВАНИЕ */
     .rank-row {{
         display: flex;
+        justify-content: space-between;
         align-items: center;
         margin-bottom: 8px;
     }}
@@ -137,49 +121,62 @@ st.markdown(f"""
     .rank-title {{
         font-family: 'Black Ops One', cursive;
         font-size: 14px;
-        color: #1C1C1E;
+        color: #8E8E93;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        margin-right: 10px;
     }}
     
     .rank-icon-img {{
-        height: 28px;
+        height: 40px; /* Сделал КРУПНЕЕ */
         width: auto;
-        filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.2));
+        object-fit: contain;
+        filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.2));
     }}
     
-    /* PROGRESS BAR */
+    /* 🔥🔥 PROGRESS BAR (GLOW EFFECT) 🔥🔥 */
     .progress-track {{
         width: 100%;
-        height: 6px;
-        background-color: #E5E5EA;
-        border-radius: 3px;
-        margin-bottom: 6px;
+        height: 10px; /* Чуть толще */
+        background-color: #E0E0E0;
+        border-radius: 5px;
+        margin-bottom: 8px;
         overflow: hidden;
+        border: 1px solid rgba(0,0,0,0.05);
     }}
     
     .progress-fill {{
         height: 100%;
-        background-color: #34C759;
-        border-radius: 3px;
+        border-radius: 5px;
+        /* Градиент Cyan -> Blue */
+        background: linear-gradient(90deg, #00C6FF 0%, #0072FF 100%);
+        /* Свечение */
+        box-shadow: 0 0 10px #00C6FF, 0 0 20px rgba(0, 114, 255, 0.4);
+        /* Анимация движения */
+        background-size: 200% 100%;
+        animation: gradientMove 3s linear infinite;
         transition: width 0.5s ease-in-out;
+    }}
+
+    @keyframes gradientMove {{
+        0% {{ background-position: 100% 0; }}
+        100% {{ background-position: 0 0; }}
     }}
     
     .xp-text {{
-        font-size: 10px;
-        color: #8E8E93;
-        font-weight: 600;
+        font-size: 11px;
+        color: #0072FF; /* Цвет текста под стать бару */
+        font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        float: right; /* Текст справа */
     }}
     
-    .stats-row {{ display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }}
+    .stats-row {{ display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; }}
     
     .stat-badge {{
         background-color: #F2F2F7;
-        padding: 4px 10px;
-        border-radius: 6px;
+        padding: 5px 12px;
+        border-radius: 8px;
         font-size: 11px;
         font-weight: 700;
         color: #3A3A3C;
@@ -193,11 +190,12 @@ st.markdown(f"""
         padding: 14px;
         font-weight: 600;
         border: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }}
     </style>
 """, unsafe_allow_html=True)
 
-# --- 6. ПОДКЛЮЧЕНИЕ К БАЗЕ ---
+# --- 6. ПОДКЛЮЧЕНИЕ ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
@@ -212,38 +210,45 @@ try:
 except:
     df = pd.DataFrame()
 
-# --- 7. РАСЧЕТ ДАННЫХ ---
+# --- 7. РАСЧЕТ ---
 user_age = calculate_age(USER_BIRTHDAY)
 total_xp = len(df) if not df.empty else 0 
 rank = get_rank_data(total_xp)
 
-# --- 8. ИНТЕРФЕЙС (HTML БЕЗ ОТСТУПОВ!) ---
+# --- 8. ИНТЕРФЕЙС ---
 
-profile_html = f"""
+# HTML
+st.markdown(f"""
 <div class="profile-card">
-<div class="avatar-area">
-<img src="{AVATAR_URL}" class="avatar-img">
-</div>
-<div class="info-area">
-<div class="user-name">SERGEY</div>
-<div class="rank-row">
-<span class="rank-title">{rank['title']} // {rank['abbr']}</span>
-<img src="{rank['icon']}" class="rank-icon-img">
-</div>
-<div class="progress-track">
-<div class="progress-fill" style="width: {rank['progress']}%;"></div>
-</div>
-<span class="xp-text">PROMOTION IN: {rank['next_xp']} MISSIONS (TOTAL: {total_xp})</span>
-<div class="stats-row">
-<div class="stat-badge">🎂 {user_age} YRS</div>
-<div class="stat-badge">⚖️ {USER_WEIGHT_CURRENT} KG</div>
-</div>
-</div>
-</div>
-"""
-st.markdown(profile_html, unsafe_allow_html=True)
+    <div class="avatar-area">
+        <img src="{AVATAR_URL}" class="avatar-img">
+    </div>
+    <div class="info-area">
+        <div class="user-name">SERGEY</div>
+        
+        <div class="rank-row">
+            <span class="rank-title">{rank['title']} // {rank['abbr']}</span>
+            <img src="{rank['icon']}" class="rank-icon-img">
+        </div>
+        
+        <div class="progress-track">
+            <div class="progress-fill" style="width: {rank['progress']}%;"></div>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+             <span style="font-size: 10px; color: #888; font-weight: 600;">LEVEL PROGRESS</span>
+             <span class="xp-text">{rank['next_xp']} MISSIONS TO PROMOTION</span>
+        </div>
 
-# МЕНЮ
+        <div class="stats-row">
+            <div class="stat-badge">🎂 {user_age} YRS</div>
+            <div class="stat-badge">⚖️ {USER_WEIGHT_CURRENT} KG</div>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# Меню
 selected = option_menu(
     menu_title=None,
     options=["DASHBOARD", "LOGBOOK", "AI COACH"],
@@ -277,32 +282,32 @@ if selected == "DASHBOARD":
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar':False})
 
 elif selected == "LOGBOOK":
-    st.caption("MISSION LOG (EARN XP)")
+    st.caption("LOG MISSION")
     with st.form("add"):
         ex = st.text_input("Exercise")
         c1, c2, c3 = st.columns(3)
         w = c1.number_input("Weight", step=2.5)
         r = c2.number_input("Reps", step=1, value=10)
         rpe = c3.selectbox("RPE", [7,8,9,10])
-        note = st.text_area("Debrief Note")
+        note = st.text_area("Note")
         if st.form_submit_button("COMPLETE MISSION"):
             if ex:
                 try:
                     sheet.append_row([datetime.now().strftime("%Y-%m-%d"), ex, w, r, rpe, "done", note])
-                    st.success(f"Mission Logged! Rank Progress Updated.")
+                    st.success(f"Log Saved! +1 XP")
                     st.rerun() 
-                except: st.error("Database Connection Failed")
+                except: st.error("Error")
 
 elif selected == "AI COACH":
-    st.caption(f"INSTRUCTOR // {rank['abbr']} LEVEL")
+    st.caption(f"INSTRUCTOR // {rank['abbr']}")
     if "messages" not in st.session_state: st.session_state.messages = []
     for m in st.session_state.messages:
         with st.chat_message(m["role"]): st.markdown(m["content"])
         
-    if p := st.chat_input("Request Intel..."):
+    if p := st.chat_input("Question..."):
         st.session_state.messages.append({"role": "user", "content": p})
         with st.chat_message("user"): st.markdown(p)
         model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
-        res = model.generate_content(f"Ты военный инструктор. Мое звание: {rank['title']}. Отвечай коротко и по-военному. Вопрос: {p}")
+        res = model.generate_content(f"You are a drill sergeant. User rank: {rank['title']}. Question: {p}")
         with st.chat_message("assistant"): st.markdown(res.text)
         st.session_state.messages.append({"role": "assistant", "content": res.text})
