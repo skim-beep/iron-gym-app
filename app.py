@@ -21,11 +21,11 @@ AVATAR_URL = "https://i.ibb.co.com/TDhQXVTR/unnamed-3.jpg"
 USER_BIRTHDAY = date(1985, 2, 20)
 USER_WEIGHT_CURRENT = 85.0 
 
-# --- 3. ПОЛНАЯ ТАБЛИЦА ЗВАНИЙ (DATABASE) ---
+# --- 3. ПОЛНАЯ ТАБЛИЦА ЗВАНИЙ (US ARMY) ---
 # Структура: (Мин. XP, Звание, Аббревиатура, Ссылка на иконку)
 RANK_SYSTEM = [
     # --- ENLISTED (РЯДОВЫЕ И СЕРЖАНТЫ) ---
-    (0, 9, "PRIVATE RECRUIT", "PV1", "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/US_Army_E2.svg/160px-US_Army_E2.svg.png"), # Используем E2 для визуализации, т.к. E1 пустой
+    (0, 9, "PRIVATE RECRUIT", "PV1", "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/US_Army_E2.svg/160px-US_Army_E2.svg.png"),
     (10, 24, "PRIVATE FIRST CLASS", "PFC", "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/US_Army_E3.svg/160px-US_Army_E3.svg.png"),
     (25, 49, "SPECIALIST", "SPC", "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/US_Army_E4_SPC.svg/160px-US_Army_E4_SPC.svg.png"),
     (50, 74, "SERGEANT", "SGT", "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/US_Army_E5.svg/160px-US_Army_E5.svg.png"),
@@ -49,7 +49,7 @@ RANK_SYSTEM = [
     (420, 449, "LT COLONEL", "LTC", "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/US-Army-O5-Shoulder.svg/160px-US-Army-O5-Shoulder.svg.png"),
     (450, 479, "COLONEL", "COL", "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/US-Army-O6-Shoulder.svg/160px-US-Army-O6-Shoulder.svg.png"),
     
-    # --- GENERALS (ГЕНЕРАЛЫ - ВЫСШАЯ ЛИГА) ---
+    # --- GENERALS (ГЕНЕРАЛЫ) ---
     (480, 499, "BRIGADIER GENERAL", "BG", "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/US-Army-O7-Shoulder.svg/160px-US-Army-O7-Shoulder.svg.png"),
     (500, 524, "MAJOR GENERAL", "MG", "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/US-Army-O8-Shoulder.svg/160px-US-Army-O8-Shoulder.svg.png"),
     (525, 9999, "GENERAL OF THE ARMY", "GA", "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/US-Army-General_of_the_Army-Shoulder.svg/160px-US-Army-General_of_the_Army-Shoulder.svg.png")
@@ -79,7 +79,7 @@ st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&display=swap');
-    @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap'); /* Военный шрифт */
+    @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap');
 
     .stApp {{ background-color: #F2F3F7; font-family: 'Inter', sans-serif; }}
     #MainMenu, footer, header {{ visibility: hidden; }}
@@ -109,7 +109,7 @@ st.markdown(f"""
         height: 85px;
         border-radius: 50%;
         overflow: hidden;
-        border: 2px solid #D4AF37; /* Золотая обводка */
+        border: 2px solid #D4AF37;
         flex-shrink: 0;
         margin-right: 20px;
         background: #000;
@@ -128,7 +128,6 @@ st.markdown(f"""
         text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
     }}
     
-    /* ЗВАНИЕ И ИКОНКА */
     .rank-row {{
         display: flex;
         align-items: center;
@@ -136,7 +135,7 @@ st.markdown(f"""
     }}
     
     .rank-title {{
-        font-family: 'Black Ops One', cursive; /* Военный шрифт */
+        font-family: 'Black Ops One', cursive;
         font-size: 14px;
         color: #1C1C1E;
         text-transform: uppercase;
@@ -162,7 +161,7 @@ st.markdown(f"""
     
     .progress-fill {{
         height: 100%;
-        background-color: #34C759; /* Зеленый прогресс */
+        background-color: #34C759;
         border-radius: 3px;
         transition: width 0.5s ease-in-out;
     }}
@@ -215,37 +214,34 @@ except:
 
 # --- 7. РАСЧЕТ ДАННЫХ ---
 user_age = calculate_age(USER_BIRTHDAY)
-total_xp = len(df) if not df.empty else 0 # 1 Тренировка = 1 XP
+total_xp = len(df) if not df.empty else 0 
 rank = get_rank_data(total_xp)
 
-# --- 8. ИНТЕРФЕЙС ---
+# --- 8. ИНТЕРФЕЙС (HTML БЕЗ ОТСТУПОВ!) ---
 
-st.markdown(f"""
+profile_html = f"""
 <div class="profile-card">
-    <div class="avatar-area">
-        <img src="{AVATAR_URL}" class="avatar-img">
-    </div>
-    <div class="info-area">
-        <div class="user-name">SERGEY</div>
-        
-        <div class="rank-row">
-            <span class="rank-title">{rank['title']} // {rank['abbr']}</span>
-            <img src="{rank['icon']}" class="rank-icon-img">
-        </div>
-        
-        <div class="progress-track">
-            <div class="progress-fill" style="width: {rank['progress']}%;"></div>
-        </div>
-        
-        <span class="xp-text">PROMOTION IN: {rank['next_xp']} MISSIONS (TOTAL: {total_xp})</span>
-
-        <div class="stats-row">
-            <div class="stat-badge">🎂 {user_age} YRS</div>
-            <div class="stat-badge">⚖️ {USER_WEIGHT_CURRENT} KG</div>
-        </div>
-    </div>
+<div class="avatar-area">
+<img src="{AVATAR_URL}" class="avatar-img">
 </div>
-""", unsafe_allow_html=True)
+<div class="info-area">
+<div class="user-name">SERGEY</div>
+<div class="rank-row">
+<span class="rank-title">{rank['title']} // {rank['abbr']}</span>
+<img src="{rank['icon']}" class="rank-icon-img">
+</div>
+<div class="progress-track">
+<div class="progress-fill" style="width: {rank['progress']}%;"></div>
+</div>
+<span class="xp-text">PROMOTION IN: {rank['next_xp']} MISSIONS (TOTAL: {total_xp})</span>
+<div class="stats-row">
+<div class="stat-badge">🎂 {user_age} YRS</div>
+<div class="stat-badge">⚖️ {USER_WEIGHT_CURRENT} KG</div>
+</div>
+</div>
+</div>
+"""
+st.markdown(profile_html, unsafe_allow_html=True)
 
 # МЕНЮ
 selected = option_menu(
