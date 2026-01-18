@@ -18,10 +18,10 @@ st.set_page_config(
 
 # --- 2. НАСТРОЙКИ ПРОФИЛЯ ---
 
-# 🔥 ТВОЙ АВАТАР (Вытащил из твоего кода)
+# ТВОЙ АВАТАР (Прямая ссылка)
 AVATAR_URL = "https://i.ibb.co.com/TDhQXVTR/unnamed-3.jpg"
 
-# Иконка звания (Капитан, Армия США)
+# Иконка звания (Капитан)
 RANK_ICON = "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Captain_icon.svg/1024px-Captain_icon.svg.png"
 
 USER_BIRTHDAY = date(1985, 2, 20)
@@ -89,12 +89,14 @@ st.markdown(f"""
         margin-bottom: 5px;
     }}
     
+    /* ЗОЛОТОЕ ИМЯ */
     .user-name {{
         font-size: 24px;
         font-weight: 900;
-        color: #1C1C1E;
+        color: #D4AF37; /* GOLD COLOR */
         margin-right: 10px;
         line-height: 1;
+        text-shadow: 0px 1px 1px rgba(0,0,0,0.1); /* Легкая тень для объема */
     }}
     
     .rank-img {{ width: 22px; height: auto; }}
