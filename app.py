@@ -18,11 +18,12 @@ st.set_page_config(
 
 # --- 2. НАСТРОЙКИ ПРОФИЛЯ ---
 
-# ТВОЙ АВАТАР (Прямая ссылка)
+# ТВОЙ АВАТАР
 AVATAR_URL = "https://i.ibb.co.com/TDhQXVTR/unnamed-3.jpg"
 
-# Иконка звания (Капитан - Две серебряные шпалы)
-RANK_ICON = "https://upload.wikimedia.org/wikipedia/commons/thumb/5/52/Captain_icon.svg/1024px-Captain_icon.svg.png"
+# Иконка звания (Капитан - Две полоски). Используем надежную PNG ссылку.
+# Если эта не сработает, можно использовать эмодзи: "❚❚"
+RANK_ICON = "https://cdn-icons-png.flaticon.com/512/10254/10254756.png"
 
 USER_BIRTHDAY = date(1985, 2, 20)
 USER_WEIGHT_CURRENT = 85.0 
@@ -74,7 +75,7 @@ st.markdown(f"""
         height: 85px;
         border-radius: 50%;
         overflow: hidden;
-        border: 1px solid #D4AF37; /* Тонкий золотой контур */
+        border: 1px solid #D4AF37;
         flex-shrink: 0;
         margin-right: 20px;
     }}
@@ -92,23 +93,25 @@ st.markdown(f"""
     .user-name {{
         font-size: 26px;
         font-weight: 900;
-        color: #D4AF37; /* GOLD */
+        color: #D4AF37;
         line-height: 1;
-        text-shadow: 0 0 15px rgba(212, 175, 55, 0.5); /* SVECHENIE */
+        text-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
     }}
     
-    /* СТРОКА СО ЗВАНИЕМ */
+    /* СТРОКА ЗВАНИЯ */
     .rank-row {{
         display: flex;
-        align-items: center;
+        align-items: center; /* Центрируем вертикально */
         margin-bottom: 10px;
     }}
 
+    /* ИКОНКА ЗВАНИЯ (CSS FIX) */
     .rank-img {{ 
-        height: 16px; /* Размер значка */
-        width: auto; 
-        margin-left: 8px; /* Отступ от текста */
-        opacity: 0.8;
+        height: 24px !important; /* Принудительный размер */
+        width: 24px !important;
+        margin-left: 10px;
+        vertical-align: middle;
+        object-fit: contain;
     }}
     
     .rank-text {{
