@@ -22,7 +22,7 @@ AVATAR_URL = "https://i.ibb.co.com/TDhQXVTR/unnamed-3.jpg"
 USER_BIRTHDAY = date(1985, 2, 20)
 USER_WEIGHT_CURRENT = 85.0 
 
-# --- 3. СИСТЕМА ЗВАНИЙ (FULL ARMY) ---
+# --- 3. СИСТЕМА ЗВАНИЙ ---
 RANK_SYSTEM = [
     (0, 9, "PRIVATE RECRUIT", "PV1", "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Emblem_of_the_United_States_Department_of_the_Army.svg/100px-Emblem_of_the_United_States_Department_of_the_Army.svg.png"), 
     (10, 24, "PRIVATE (PV2)", "PV2", "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/US_Army_E2.svg/100px-US_Army_E2.svg.png"),
@@ -63,7 +63,7 @@ def calculate_age(birthdate):
     today = date.today()
     return today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
 
-# --- 5. CSS ---
+# --- 5. CSS (ИСПРАВЛЕННЫЙ) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap');
@@ -79,6 +79,7 @@ st.markdown(f"""
         box-shadow: 0px 4px 20px rgba(0,0,0,0.05);
     }}
 
+    /* ПРОФИЛЬ - ИСПРАВЛЕН ГЛЮК */
     .profile-card {{
         background-color: #FFFFFF;
         padding: 20px;
@@ -142,7 +143,6 @@ st.markdown(f"""
         border-radius: 4px;
         background: linear-gradient(90deg, #00C6FF 0%, #0072FF 100%);
         box-shadow: 0 0 10px rgba(0, 198, 255, 0.7);
-        transition: width 0.5s ease-in-out;
     }}
     
     .xp-text {{
@@ -177,7 +177,7 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# --- 6. ЗАГРУЗКА ---
+# --- 6. ЗАГРУЗКА ДАННЫХ ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
@@ -193,16 +193,21 @@ try:
         df['reps'] = pd.to_numeric(df['reps'], errors='coerce').fillna(0)
         df['date'] = pd.to_datetime(df['date'], errors='coerce')
         df = df.dropna(subset=['date'])
+        # Считаем тоннаж для каждого подхода
+        df['tonnage'] = df['weight'] * df['reps']
         
 except Exception as e:
     df = pd.DataFrame()
 
 user_age = calculate_age(USER_BIRTHDAY)
+# Считаем XP как количество уникальных дней тренировок или просто записей? 
+# Армейская система: 1 Подход = это мало. 1 Тренировка (день) = 1 XP.
+# Но для мотивации давай оставим: 1 Запись (сет) = 1 XP. Так звания идут быстрее.
 total_xp = len(df)
 rank = get_rank_data(total_xp)
 
-# --- 7. UI ПРОФИЛЯ ---
-st.markdown(f"""
+# --- 7. HTML ПРОФИЛЯ (ИСПРАВЛЕННЫЙ) ---
+profile_html = f"""
 <div class="profile-card">
 <div class="avatar-area"><img src="{AVATAR_URL}" class="avatar-img"></div>
 <div class="info-area">
@@ -221,7 +226,8 @@ st.markdown(f"""
 </div>
 </div>
 </div>
-""", unsafe_allow_html=True)
+"""
+st.markdown(profile_html, unsafe_allow_html=True)
 
 # --- 8. МЕНЮ ---
 selected = option_menu(
@@ -238,58 +244,78 @@ selected = option_menu(
 )
 
 if selected == "DASHBOARD":
-    tab1, tab2, tab3 = st.tabs(["📊 OVERVIEW", "📈 PROGRESS", "🏆 RECORDS"])
+    # 3 Вкладки: Обзор, История (Как в Excel), Графики
+    tab1, tab2, tab3 = st.tabs(["📊 DASHBOARD", "📝 HISTORY", "🏆 RECORDS"])
+    
     with tab1:
         col1, col2 = st.columns(2)
         vol = 0
-        if not df.empty: vol = (df['weight'] * df['reps']).sum()
+        if not df.empty: vol = df['tonnage'].sum()
         with col1: st.metric("TOTAL LOAD", f"{int(vol/1000)}k")
-        with col2: st.metric("MISSIONS", f"{total_xp}")
+        with col2: st.metric("MISSIONS COMPLETED", f"{total_xp}")
+        
         if not df.empty:
-            daily = df.groupby(df['date'].dt.date).apply(lambda x: (x['weight']*x['reps']).sum()).reset_index(name='v')
-            fig = px.area(daily, x='date', y='v', color_discrete_sequence=['#007AFF'])
+            daily = df.groupby(df['date'].dt.date)['tonnage'].sum().reset_index()
+            fig = px.bar(daily, x='date', y='tonnage', color_discrete_sequence=['#007AFF'])
             fig.update_layout(height=250, margin=dict(l=0,r=0,t=0,b=0), paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)')
             st.plotly_chart(fig, use_container_width=True, config={'displayModeBar':False})
+    
     with tab2:
+        st.subheader("TACTICAL LOG (HISTORY)")
         if not df.empty:
-            all_exercises = df['exercise'].unique().tolist()
-            if all_exercises:
-                selected_ex = st.selectbox("Select Target", all_exercises)
-                ex_data = df[df['exercise'] == selected_ex].sort_values('date')
-                if not ex_data.empty:
-                    fig2 = px.line(ex_data, x='date', y='weight', markers=True, title=f"{selected_ex} (Weight)", color_discrete_sequence=['#FF3B30'])
-                    fig2.update_layout(height=300, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor='rgba(0,0,0,0)')
-                    st.plotly_chart(fig2, use_container_width=True)
+            # Делаем копию для красивого отображения
+            history_df = df.copy()
+            # Сортируем: новые сверху
+            history_df = history_df.sort_values(by='date', ascending=False)
+            # Форматируем дату
+            history_df['date'] = history_df['date'].dt.strftime('%d.%m.%Y')
+            
+            # Выбираем и переименовываем колонки как в твоем Excel
+            display_df = history_df[['date', 'exercise', 'weight', 'reps', 'tonnage', 'rpe', 'note']]
+            display_df.columns = ['ДАТА', 'УПРАЖНЕНИЕ', 'ВЕС', 'ПОВТ', 'ТОННАЖ', 'RPE', 'ЗАМЕТКА']
+            
+            # Отображаем таблицу на всю ширину
+            st.dataframe(
+                display_df, 
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "ВЕС": st.column_config.NumberColumn(format="%.1f kg"),
+                    "ТОННАЖ": st.column_config.NumberColumn(format="%d"),
+                }
+            )
+        else:
+            st.info("No mission data found.")
+
     with tab3:
         if not df.empty:
             records = df.groupby('exercise')['weight'].max().reset_index()
-            records.columns = ['EXERCISE', 'MAX (KG)']
-            records = records.sort_values('MAX (KG)', ascending=False).head(10)
+            records.columns = ['EXERCISE', 'PR (KG)']
+            records = records.sort_values('PR (KG)', ascending=False).head(15)
             st.dataframe(records, use_container_width=True, hide_index=True)
 
 elif selected == "LOGBOOK":
-    st.caption("MISSION LOG (SELECT DATE FOR PAST MISSIONS)")
+    st.caption("NEW ENTRY")
     with st.form("add"):
-        # 🔥 КАЛЕНДАРЬ ДЛЯ ВЫБОРА ДАТЫ
         c_date, c_name = st.columns([1, 2])
         with c_date:
-            log_date = st.date_input("Mission Date", date.today())
+            log_date = st.date_input("Date", date.today())
         with c_name:
-            ex = st.text_input("Exercise Name")
+            # Можно сделать selectbox если наберется база
+            ex = st.text_input("Exercise", placeholder="e.g. Bench Press")
         
         c1, c2, c3 = st.columns(3)
-        w = c1.number_input("Weight (kg)", step=2.5)
+        w = c1.number_input("Weight", step=2.5)
         r = c2.number_input("Reps", step=1, value=10)
         rpe = c3.selectbox("RPE", [6,7,8,9,10])
-        note = st.text_area("Note")
+        note = st.text_area("Notes (e.g. 'Локти 45 град')")
         
-        if st.form_submit_button("COMPLETE MISSION"):
+        if st.form_submit_button("SAVE MISSION"):
             if ex:
                 try:
-                    # Используем выбранную дату, а не текущую
                     date_str = log_date.strftime("%Y-%m-%d")
                     sheet.append_row([date_str, ex, w, r, rpe, "done", note])
-                    st.success("Log Saved! +1 XP")
+                    st.success("Saved!")
                     st.rerun()
                 except Exception as e: st.error(f"Error: {e}")
 
@@ -298,10 +324,10 @@ elif selected == "AI COACH":
     if "messages" not in st.session_state: st.session_state.messages = []
     for m in st.session_state.messages:
         with st.chat_message(m["role"]): st.markdown(m["content"])
-    if p := st.chat_input("Request Intel..."):
+    if p := st.chat_input("Ask instructor..."):
         st.session_state.messages.append({"role": "user", "content": p})
         with st.chat_message("user"): st.markdown(p)
         model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
-        res = model.generate_content(f"You are a drill sergeant. User rank: {rank['title']}. Question: {p}")
+        res = model.generate_content(f"You are a tough army drill sergeant. User rank: {rank['title']}. Question: {p}")
         with st.chat_message("assistant"): st.markdown(res.text)
         st.session_state.messages.append({"role": "assistant", "content": res.text})
