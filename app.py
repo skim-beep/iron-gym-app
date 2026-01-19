@@ -1,16 +1,16 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import plotly.graph_objects as go
 import google.generativeai as genai
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import json
-import calendar
 from streamlit_option_menu import option_menu
 import base64
+from streamlit_calendar import calendar  # БИБЛИОТЕКА КАЛЕНДАРЯ
 
-# --- 1. НАСТРОЙКА ---
+# --- 1. НАСТРОЙКИ ---
 st.set_page_config(
     page_title="IRON GYM OS",
     page_icon="🦅",
@@ -18,14 +18,14 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. КОНФИГУРАЦИЯ ---
-CAMO_DARK = "#0e0e0e"
-CAMO_PANEL = "#1c1f1a"
+# --- 2. КОНФИГУРАЦИЯ (CAMO THEME) ---
+CAMO_DARK = "#121212"
+CAMO_PANEL = "#1E1E1E"
 CAMO_GREEN = "#4b5320"
 ACCENT_GOLD = "#FFD700"
 ACCENT_SILVER = "#C0C0C0"
-TEXT_COLOR = "#B0B0B0"
-ALERT_RED = "#8B0000"
+TEXT_COLOR = "#E0E0E0"
+ALERT_RED = "#500000" # Темно-красный для пропусков
 
 AVATAR_URL = "https://i.ibb.co.com/TDhQXVTR/unnamed-3.jpg"
 USER_BIRTHDAY = date(1985, 2, 20)
@@ -97,7 +97,7 @@ def detect_muscle_group(exercise_name):
     if any(x in ex for x in ['пресс', 'планка', 'abs', 'core', 'скручивания']): return "ПРЕСС"
     return "ОБЩЕЕ"
 
-# --- 5. CSS (MONOLITH GRID FIX) ---
+# --- 5. CSS ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&display=swap');
@@ -126,30 +126,15 @@ st.markdown(f"""
     }}
 
     .streamlit-expanderHeader {{ background-color: {CAMO_PANEL} !important; color: {ACCENT_GOLD} !important; border: 1px solid #333 !important; font-family: 'Oswald' !important; }}
-    .rank-row-item {{ display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #333; }}
     
-    /* --- CALENDAR GRID FIX --- */
-    /* Убираем отступы между колонками */
-    [data-testid="column"] {{ padding: 0 !important; margin: 0 !important; }}
-    [data-testid="stHorizontalBlock"] {{ gap: 0 !important; }}
-    
-    /* Кнопки календаря */
-    div.stButton > button {{
-        width: 100%; aspect-ratio: 1 / 1; 
-        border: 1px solid #1a1a1a; background: #121212; 
-        color: #555; border-radius: 0px; 
-        font-family: 'Oswald', sans-serif; font-weight: bold; font-size: 14px;
-        margin: 0px !important; padding: 0px !important;
-        display: flex; align-items: center; justify-content: center; box-shadow: none;
-    }}
-    div.stButton > button:hover {{ border: 1px solid {ACCENT_GOLD}; color: {ACCENT_GOLD}; z-index: 5; }}
-    
-    /* INPUTS */
     input, textarea, select {{ background: #111 !important; color: {ACCENT_GOLD} !important; border: 1px solid #444 !important; font-family: 'Roboto Mono' !important; }}
+    
+    /* Кнопки */
+    div.stButton > button {{ border: 1px solid {CAMO_GREEN}; background: #1a1a1a; color: {TEXT_COLOR}; font-family: 'Oswald'; }}
     </style>
 """, unsafe_allow_html=True)
 
-# --- 6. DATA ---
+# --- 6. ЗАГРУЗКА ДАННЫХ ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
@@ -176,9 +161,10 @@ except: df = pd.DataFrame()
 total_xp = len(df)
 rank = get_rank_data(total_xp)
 user_age = calculate_age(USER_BIRTHDAY)
-trained_dates = set(df['День/Дата'].dt.date) if not df.empty else set()
+# Список уникальных дат тренировок (строки YYYY-MM-DD)
+trained_dates_set = set(df['День/Дата'].dt.strftime('%Y-%m-%d')) if not df.empty else set()
 
-# --- 7. UI PROFILE ---
+# --- 7. ПРОФИЛЬ ---
 st.markdown(f"""
 <div class="camo-card" style="display:flex; align-items:center;">
     <div class="avatar-area"><img src="{AVATAR_URL}" class="avatar-img"></div>
@@ -196,16 +182,15 @@ st.markdown(f"""
 
 with st.expander(f"{rank['title']} // {rank['abbr']} (СПИСОК)"):
     for r_min, r_max, title, abbr, r_type, grade in FULL_RANK_SYSTEM:
-        is_active = (title == rank['title'])
-        bg = "background-color:rgba(255,215,0,0.1); border-left:2px solid #FFD700;" if is_active else ""
-        col = ACCENT_GOLD if is_active else "#777"
-        st.markdown(f"""<div class="rank-row-item" style="{bg}">
+        bg = "background-color:rgba(255,215,0,0.1); border-left:2px solid #FFD700;" if title == rank['title'] else ""
+        col = ACCENT_GOLD if title == rank['title'] else "#777"
+        st.markdown(f"""<div style="display:flex; align-items:center; padding:8px; border-bottom:1px solid #333; {bg}">
             <img src="{get_rank_svg(r_type, grade)}" style="height:25px; margin-right:10px;">
             <div style="flex-grow:1; color:{col}; font-family:'Oswald';">{title}</div>
             <div style="font-family:'Roboto Mono'; font-size:10px; color:#555;">{r_min}</div>
         </div>""", unsafe_allow_html=True)
 
-# --- 8. MENU ---
+# --- 8. МЕНЮ ---
 selected = option_menu(
     menu_title=None,
     options=["ДАШБОРД", "ЖУРНАЛ", "ТРЕНЕР"],
@@ -219,27 +204,30 @@ selected = option_menu(
     }
 )
 
-# --- 9. DASHBOARD ---
+# --- 9. ДАШБОРД ---
 if selected == "ДАШБОРД":
     
-    if 'c_year' not in st.session_state: st.session_state.c_year = date.today().year
-    if 'c_month' not in st.session_state: st.session_state.c_month = date.today().month
-    if 'sel_date' not in st.session_state: st.session_state.sel_date = None
-
-    # --- 1. РАДАР (ПЕРВЫЙ) ---
+    # 1. РАДАР
     st.markdown('<div class="tac-header">СТАТУС БРОНИ</div>', unsafe_allow_html=True)
     st.markdown('<div class="camo-card">', unsafe_allow_html=True)
     
+    # Инициализация даты фильтра
+    if 'cal_sel_date' not in st.session_state:
+        st.session_state.cal_sel_date = None
+
     filtered_df = df.copy()
-    f_msg = "ОБЩАЯ СТАТИСТИКА"
-    if st.session_state.sel_date:
-        filtered_df = df[df['День/Дата'].dt.date == st.session_state.sel_date]
-        f_msg = f"ОТЧЕТ ЗА: {st.session_state.sel_date.strftime('%d.%m.%Y')}"
+    filter_msg = "ОБЩАЯ СТАТИСТИКА"
+    
+    if st.session_state.cal_sel_date:
+        sel_d = st.session_state.cal_sel_date
+        # Фильтруем данные (переводим строку YYYY-MM-DD в дату)
+        filtered_df = df[df['День/Дата'].dt.strftime('%Y-%m-%d') == sel_d]
+        filter_msg = f"ОТЧЕТ ЗА: {sel_d}"
         if st.button("❌ СБРОСИТЬ ФИЛЬТР"):
-            st.session_state.sel_date = None
+            st.session_state.cal_sel_date = None
             st.rerun()
-            
-    st.markdown(f"<div style='text-align:center; color:{ACCENT_GOLD}; font-family:Oswald; margin-bottom:5px;'>{f_msg}</div>", unsafe_allow_html=True)
+
+    st.markdown(f"<div style='text-align:center; color:{ACCENT_GOLD}; font-family:Oswald; margin-bottom:5px;'>{filter_msg}</div>", unsafe_allow_html=True)
 
     if not filtered_df.empty:
         muscle_data = filtered_df.groupby('Muscle')['Сет'].count().reset_index()
@@ -267,70 +255,74 @@ if selected == "ДАШБОРД":
     else: st.info("Нет данных")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # --- 2. КАЛЕНДАРЬ (ПЛИТКА) ---
+    # 2. ПРОФЕССИОНАЛЬНЫЙ КАЛЕНДАРЬ
     st.markdown('<div class="tac-header">КАЛЕНДАРЬ МИССИЙ</div>', unsafe_allow_html=True)
-    st.markdown('<div class="camo-card" style="padding:5px;">', unsafe_allow_html=True)
     
-    def change_m(d):
-        m = st.session_state.c_month + d
-        y = st.session_state.c_year
-        if m>12: m=1; y+=1
-        elif m<1: m=12; y-=1
-        st.session_state.c_month = m
-        st.session_state.c_year = y
-
-    c1, c2, c3 = st.columns([1,4,1])
-    with c1: st.button("◀", on_click=change_m, args=(-1,), key="p")
-    with c2: 
-        mn = calendar.month_name[st.session_state.c_month].upper()
-        st.markdown(f"<div style='text-align:center; font-family:Oswald; font-size:18px; color:{ACCENT_GOLD}; padding-top:10px;'>{mn} {st.session_state.c_year}</div>", unsafe_allow_html=True)
-    with c3: st.button("▶", on_click=change_m, args=(1,), key="n")
-
-    cal = calendar.monthcalendar(st.session_state.c_year, st.session_state.c_month)
-    today = date.today()
+    # Генерация событий для календаря
+    calendar_events = []
     
-    # Headers
-    cols = st.columns(7)
-    for i, d in enumerate(["ПН","ВТ","СР","ЧТ","ПТ","СБ","ВС"]):
-        cols[i].markdown(f"<div style='text-align:center; font-size:10px; color:#555;'>{d}</div>", unsafe_allow_html=True)
-
-    # Grid
-    for week in cal:
-        cols = st.columns(7)
-        for i, day in enumerate(week):
-            if day == 0:
-                cols[i].write("")
+    # Чтобы найти пропущенные дни, возьмем диапазон от первой тренировки до сегодня
+    if not df.empty:
+        min_date = df['День/Дата'].min().date()
+        today = date.today()
+        # Генерируем все дни от начала до сегодня
+        all_days = [min_date + timedelta(days=x) for x in range((today - min_date).days + 1)]
+        
+        for d in all_days:
+            d_str = d.strftime("%Y-%m-%d")
+            if d_str in trained_dates_set:
+                # ТРЕНИРОВКА (ЗЕЛЕНЫЙ)
+                calendar_events.append({
+                    "title": "✅",
+                    "start": d_str,
+                    "backgroundColor": CAMO_GREEN,
+                    "borderColor": ACCENT_GOLD,
+                    "display": "background"
+                })
             else:
-                curr = date(st.session_state.c_year, st.session_state.c_month, day)
-                is_tr = curr in trained_dates
-                is_tod = (curr == today)
-                is_fut = (curr > today)
-                
-                label = f"{day}"
-                if cols[i].button(label, key=f"btn_{curr}"):
-                    if is_tr: st.session_state.sel_date = curr
-                    else: st.session_state.sel_date = None
-                    st.rerun()
+                # ПРОПУСК (КРАСНЫЙ) - только если это день в прошлом
+                calendar_events.append({
+                    "title": "❌",
+                    "start": d_str,
+                    "backgroundColor": ALERT_RED,
+                    "borderColor": "#330000",
+                    "display": "background"
+                })
 
-                bg = "#121212"; fg = "#444"; bdr = "1px solid #1c1c1c"
-                if is_tr: bg = CAMO_GREEN; fg = "#FFF"; bdr = f"1px solid {ACCENT_GOLD}"
-                elif curr < today: bg = "#250000"; fg = "#700"; bdr = "1px solid #300"
-                if is_tod: bdr = f"2px solid {ACCENT_GOLD}"; fg = ACCENT_GOLD
-                if is_fut: fg = "#222"
+    # Опции календаря
+    cal_options = {
+        "headerToolbar": {
+            "left": "prev,next",
+            "center": "title",
+            "right": "today"
+        },
+        "initialView": "dayGridMonth",
+        "selectable": True, # Разрешаем клик
+    }
+    
+    # Стилизация календаря через CSS инъекцию внутрь компонента
+    custom_css = f"""
+        .fc {{ background-color: {CAMO_PANEL}; font-family: 'Oswald', sans-serif; }}
+        .fc-theme-standard td, .fc-theme-standard th {{ border-color: #333; }}
+        .fc-col-header-cell {{ background-color: #111; color: {ACCENT_GOLD}; }}
+        .fc-daygrid-day-number {{ color: {TEXT_COLOR}; text-decoration: none; }}
+        .fc-day-today {{ background-color: rgba(255, 215, 0, 0.1) !important; border: 2px solid {ACCENT_GOLD} !important; }}
+        .fc-button-primary {{ background-color: #111; border-color: {CAMO_GREEN}; color: {ACCENT_GOLD}; text-transform: uppercase; }}
+        .fc-button-primary:hover {{ background-color: {CAMO_GREEN}; color: white; }}
+        .fc-button-active {{ background-color: {CAMO_GREEN} !important; color: white !important; }}
+    """
 
-                st.markdown(f"""<script>
-                    var buttons = window.parent.document.querySelectorAll('div[data-testid="column"] button');
-                    for (var i = 0; i < buttons.length; i++) {{
-                        if (buttons[i].innerText === "{label}") {{
-                            buttons[i].style.backgroundColor = "{bg}";
-                            buttons[i].style.color = "{fg}";
-                            buttons[i].style.border = "{bdr}";
-                        }}
-                    }}
-                </script>""", unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+    cal = calendar(events=calendar_events, options=cal_options, custom_css=custom_css, key="tactical_cal")
+    
+    # Обработка клика
+    if cal.get("callback") == "dateClick":
+        clicked_date = cal["dateClick"]["date"]
+        # Обновляем состояние только если дата изменилась
+        if st.session_state.cal_sel_date != clicked_date:
+            st.session_state.cal_sel_date = clicked_date
+            st.rerun()
 
-    # --- 3. ТАБЛИЦА ---
+    # 3. ТАБЛИЦА
     st.markdown('<div class="tac-header">ЖУРНАЛ</div>', unsafe_allow_html=True)
     if not filtered_df.empty:
         hdf = filtered_df.copy().sort_values(by=['День/Дата', 'Сет'], ascending=[False, True])
