@@ -21,9 +21,9 @@ st.set_page_config(
 AVATAR_URL = "https://i.ibb.co.com/TDhQXVTR/unnamed-3.jpg"
 USER_BIRTHDAY = date(1985, 2, 20)
 USER_WEIGHT_CURRENT = 85.0 
-ACCENT_COLOR = "#FFD700" # GOLD
+ACCENT_COLOR = "#D4AF37" # Classic Gold
 
-# --- 3. СИСТЕМА ЗВАНИЙ ---
+# --- 3. ЗВАНИЯ (STABLE LINKS) ---
 RANK_SYSTEM = [
     (0, 9, "PRIVATE RECRUIT", "PV1", "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/United_States_Army_Star_Logo.svg/200px-United_States_Army_Star_Logo.svg.png"), 
     (10, 24, "PRIVATE (PV2)", "PV2", "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/US_Army_E2.svg/100px-US_Army_E2.svg.png"),
@@ -64,91 +64,97 @@ def detect_muscle_group(exercise_name):
     if any(x in ex for x in ['пресс', 'планка', 'abs', 'core', 'скручивания']): return "КОР"
     return "ОБЩЕЕ"
 
-# --- 5. DARK TACTICAL CSS ---
+# --- 5. CLEAN LIGHT CSS ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap');
 
-    /* BASE */
+    /* BACKGROUND */
     .stApp {{
-        background: linear-gradient(135deg, #121212 0%, #000000 100%);
+        background-color: #F2F3F7;
         font-family: 'Inter', sans-serif;
-        color: #E0E0E0;
+        color: #1C1C1E;
     }}
     #MainMenu, footer, header {{ visibility: hidden; }}
-    h1, h2, h3, p, span, div {{ color: #E0E0E0; }}
 
-    /* GLASS CARD */
-    .glass-card {{
-        background: rgba(30, 30, 30, 0.6);
-        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 215, 0, 0.1);
-        border-radius: 16px;
-        padding: 16px;
-        margin-bottom: 16px;
+    /* CLEAN WHITE CARD */
+    .clean-card {{
+        background-color: #FFFFFF;
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0px 4px 15px rgba(0,0,0,0.05);
+        margin-bottom: 20px;
+        border: 1px solid #FFFFFF;
     }}
 
     /* PROFILE */
     .profile-card {{ display: flex; align-items: center; }}
     .avatar-area {{
-        width: 80px; height: 80px; border-radius: 16px;
-        border: 2px solid {ACCENT_COLOR}; box-shadow: 0 0 15px {ACCENT_COLOR}40;
-        overflow: hidden; margin-right: 15px; flex-shrink: 0;
+        width: 80px; height: 80px; border-radius: 50%;
+        border: 2px solid {ACCENT_COLOR}; 
+        overflow: hidden; margin-right: 20px; flex-shrink: 0;
     }}
     .avatar-img {{ width: 100%; height: 100%; object-fit: cover; }}
     .info-area {{ flex-grow: 1; }}
     .user-name {{
-        font-family: 'Black Ops One', cursive; font-size: 24px;
-        color: #FFF; letter-spacing: 1px; margin: 0;
+        font-family: 'Black Ops One', cursive; font-size: 26px;
+        color: {ACCENT_COLOR}; letter-spacing: 1px; margin: 0;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }}
     .rank-row {{ display: flex; align-items: center; margin-bottom: 8px; }}
-    .rank-title {{ color: {ACCENT_COLOR}; font-weight: 700; margin-right: 10px; font-size: 14px; }}
-    .rank-icon-img {{ height: 32px; width: auto; object-fit: contain; filter: drop-shadow(0 0 5px {ACCENT_COLOR}); }}
+    .rank-title {{ color: #8E8E93; font-weight: 700; margin-right: 10px; font-size: 13px; }}
+    .rank-icon-img {{ height: 28px; width: auto; object-fit: contain; }}
     
     .progress-track {{
-        width: 100%; height: 6px; background: rgba(255,255,255,0.1);
-        border-radius: 3px; overflow: hidden; margin-top: 5px;
+        width: 100%; height: 8px; background: #E5E5EA;
+        border-radius: 4px; overflow: hidden; margin-top: 5px;
     }}
     .progress-fill {{
-        height: 100%; background: linear-gradient(90deg, {ACCENT_COLOR}, #FFF);
-        box-shadow: 0 0 10px {ACCENT_COLOR};
+        height: 100%; background-color: {ACCENT_COLOR};
     }}
-    .xp-text {{ font-size: 10px; color: #888; float: right; margin-top: 2px; }}
+    .xp-text {{ font-size: 10px; color: #8E8E93; float: right; margin-top: 2px; font-weight: 600; }}
 
     .stat-badge {{
-        background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px;
-        font-size: 10px; border: 1px solid rgba(255,255,255,0.1); margin-right: 5px;
+        background: #F2F2F7; padding: 4px 10px; border-radius: 8px;
+        font-size: 11px; font-weight: 600; color: #3A3A3C; margin-right: 5px;
         display: inline-flex; align-items: center;
+    }}
+
+    /* HEADERS */
+    .section-title {{
+        font-size: 14px; font-weight: 800; color: #8E8E93; 
+        text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
     }}
 
     /* BUTTONS */
     div.stButton > button {{
-        width: 100%; background: rgba(255,215,0,0.1); color: {ACCENT_COLOR};
-        border: 1px solid {ACCENT_COLOR}50; border-radius: 10px; font-weight: 700;
-        transition: 0.2s;
+        width: 100%; background: #1C1C1E; color: #FFF;
+        border: none; border-radius: 12px; padding: 14px; font-weight: 700;
     }}
-    div.stButton > button:active {{ background: {ACCENT_COLOR}; color: black; }}
+    div.stButton > button:active {{ background: #333; }}
 
-    /* CALENDAR */
+    /* CALENDAR (LIGHT THEME) */
     .calendar-table {{ width: 100%; border-collapse: separate; border-spacing: 4px; }}
     .calendar-cell {{ 
         text-align: center; padding: 10px 5px; border-radius: 8px; 
-        font-size: 13px; font-weight: 700; background: rgba(255,255,255,0.03); 
-        color: #CCC; border: 1px solid rgba(255,255,255,0.05);
+        font-size: 13px; font-weight: 700; background: #F2F2F7; 
+        color: #3A3A3C; 
     }}
-    .day-trained {{ background: {ACCENT_COLOR}20; color: {ACCENT_COLOR}; border: 1px solid {ACCENT_COLOR}60; }}
-    .day-missed {{ background: rgba(200,50,50,0.2); color: #FF5555; border: 1px solid #FF555540; }}
-    .day-today {{ border: 2px solid {ACCENT_COLOR}; color: #FFF; }}
+    .day-trained {{ background: {ACCENT_COLOR}; color: #FFF; }}
+    .day-missed {{ background: #FFB3B3; color: #FFF; }}
+    .day-today {{ border: 2px solid {ACCENT_COLOR}; background: transparent; }}
+    .day-header {{ color: #8E8E93; font-size: 11px; text-transform: uppercase; padding-bottom: 5px; }}
+    .day-empty {{ background: transparent; }}
+    .day-future {{ color: #D1D1D6; background: transparent; }}
 
     /* INPUTS */
-    input, textarea {{ background-color: rgba(0,0,0,0.3) !important; color: white !important; border: 1px solid #333 !important; }}
+    div[data-baseweb="input"] {{ background-color: #F2F2F7 !important; border-radius: 8px !important; }}
+    div[data-baseweb="select"] > div {{ background-color: #F2F2F7 !important; border-radius: 8px !important; }}
     </style>
 """, unsafe_allow_html=True)
 
-# --- 6. DATA LOADING ---
+# --- 6. DATA LOADING (ROBUST) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
@@ -160,15 +166,27 @@ try:
     df = pd.DataFrame(raw_data) if raw_data else pd.DataFrame()
     
     if not df.empty:
+        # CLEANING: Replace commas with dots for numbers
+        for col in ['Вес (кг)', 'Тоннаж']:
+            if col in df.columns:
+                df[col] = df[col].astype(str).str.replace(',', '.')
+        
+        # Numeric conversion
         df['Вес (кг)'] = pd.to_numeric(df['Вес (кг)'], errors='coerce').fillna(0)
+        df['Повт'] = pd.to_numeric(df['Повт'], errors='coerce').fillna(0)
         df['Тоннаж'] = pd.to_numeric(df['Тоннаж'], errors='coerce').fillna(0)
+        
+        # Date parsing (Supports multiple formats)
         df['День/Дата'] = pd.to_datetime(df['День/Дата'], errors='coerce')
         df = df.dropna(subset=['День/Дата'])
+        
+        # Calculate Muscle Groups
         df['Muscle'] = df['Упражнение'].apply(detect_muscle_group)
-except:
+except Exception as e:
     df = pd.DataFrame()
+    # st.error(f"Data error: {e}") # Uncomment to debug
 
-# Вычисляем ранг
+# Calc Stats
 total_xp = len(df)
 rank = get_rank_data(total_xp)
 user_age = calculate_age(USER_BIRTHDAY)
@@ -177,14 +195,14 @@ trained_dates = set(df['День/Дата'].dt.date) if not df.empty else set()
 # --- 7. HEADER & SYNC ---
 col_logo, col_sync = st.columns([3, 1])
 with col_logo:
-    st.markdown(f"<div style='font-family:\"Black Ops One\"; font-size:20px; color:{ACCENT_COLOR};'>IRON GYM OS</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='font-family:\"Black Ops One\"; font-size:20px; color:#1C1C1E;'>IRON GYM OS</div>", unsafe_allow_html=True)
 with col_sync:
     if st.button("🔄 SYNC"):
         st.rerun()
 
 # ПРОФИЛЬ
 st.markdown(f"""
-<div class="glass-card profile-card">
+<div class="clean-card profile-card">
     <div class="avatar-area">
         <img src="{AVATAR_URL}" class="avatar-img">
     </div>
@@ -215,46 +233,46 @@ selected = option_menu(
     orientation="horizontal",
     styles={
         "container": {"padding": "0!important", "background-color": "transparent"},
-        "nav-link": {"font-size": "12px", "color": "white"},
-        "nav-link-selected": {"background-color": f"{ACCENT_COLOR}20", "color": ACCENT_COLOR, "border": f"1px solid {ACCENT_COLOR}"},
+        "nav-link": {"font-size": "12px", "color": "#1C1C1E", "margin": "0px"},
+        "nav-link-selected": {"background-color": "#1C1C1E", "color": "#FFF"},
     }
 )
 
 # --- 9. DASHBOARD ---
 if selected == "DASHBOARD":
     
-    st.markdown(f'<div style="color:{ACCENT_COLOR}; font-weight:bold; margin-bottom:10px;">TACTICAL OVERVIEW</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">BODY ARMOR STATUS</div>', unsafe_allow_html=True)
     
-    # RADAR (ИСПРАВЛЕН ЦВЕТ)
-    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    # RADAR CHART
+    st.markdown('<div class="clean-card">', unsafe_allow_html=True)
     if not df.empty:
         muscle_data = df.groupby('Muscle')['Тоннаж'].sum().reset_index()
         all_muscles = ["ГРУДЬ", "СПИНА", "НОГИ/КАРДИО", "РУКИ", "ПЛЕЧИ", "КОР"]
         radar_df = pd.DataFrame({"Muscle": all_muscles})
         radar_df = radar_df.merge(muscle_data, on="Muscle", how="left").fillna(0)
         
-        # FIX: Используем rgba вместо hex+alpha
         fig = go.Figure(data=go.Scatterpolar(
             r=radar_df['Тоннаж'], theta=radar_df['Muscle'], fill='toself',
-            line=dict(color=ACCENT_COLOR, width=3),
-            fillcolor='rgba(255, 215, 0, 0.3)', # FIXED COLOR
-            marker=dict(size=6, color=ACCENT_COLOR)
+            line=dict(color=ACCENT_COLOR, width=2),
+            fillcolor='rgba(212, 175, 55, 0.2)'
         ))
         fig.update_layout(
             polar=dict(
-                radialaxis=dict(visible=True, showticklabels=False, linecolor='#333'),
-                angularaxis=dict(linecolor='#333', tickfont=dict(color='#CCC', size=10)),
+                radialaxis=dict(visible=True, showticklabels=False, linecolor='#E5E5EA'),
+                angularaxis=dict(linecolor='#E5E5EA', tickfont=dict(color='#8E8E93', size=10)),
                 bgcolor='rgba(0,0,0,0)'
             ),
             showlegend=False, height=280, margin=dict(l=30, r=30, t=20, b=20),
-            paper_bgcolor='rgba(0,0,0,0)', font=dict(color='white')
+            paper_bgcolor='rgba(0,0,0,0)', font=dict(color='#1C1C1E')
         )
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar':False})
-    else: st.info("No data")
+    else: st.info("No data yet.")
     st.markdown('</div>', unsafe_allow_html=True)
 
     # CALENDAR
-    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">MISSION CALENDAR</div>', unsafe_allow_html=True)
+    st.markdown('<div class="clean-card">', unsafe_allow_html=True)
+    
     if 'c_year' not in st.session_state: st.session_state.c_year = date.today().year
     if 'c_month' not in st.session_state: st.session_state.c_month = date.today().month
 
@@ -270,7 +288,7 @@ if selected == "DASHBOARD":
     with c1: st.button("◀", on_click=change_m, args=(-1,))
     with c2: 
         m_name = calendar.month_name[st.session_state.c_month].upper()
-        st.markdown(f"<div style='text-align:center; font-weight:bold; color:{ACCENT_COLOR}; padding-top:10px;'>{m_name} {st.session_state.c_year}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='text-align:center; font-weight:800; color:#1C1C1E; padding-top:10px;'>{m_name} {st.session_state.c_year}</div>", unsafe_allow_html=True)
     with c3: st.button("▶", on_click=change_m, args=(1,))
 
     cal = calendar.monthcalendar(st.session_state.c_year, st.session_state.c_month)
@@ -296,8 +314,8 @@ if selected == "DASHBOARD":
     st.markdown(h, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # HISTORY TABLE
-    st.markdown(f'<div style="color:{ACCENT_COLOR}; font-weight:bold; margin-bottom:10px;">COMBAT LOG</div>', unsafe_allow_html=True)
+    # TABLE
+    st.markdown('<div class="section-title">COMBAT LOG</div>', unsafe_allow_html=True)
     if not df.empty:
         hdf = df.copy().sort_values(by='День/Дата', ascending=False)
         hdf['День/Дата'] = hdf['День/Дата'].dt.strftime('%d.%m')
@@ -305,7 +323,8 @@ if selected == "DASHBOARD":
 
 # --- LOGBOOK ---
 elif selected == "LOGBOOK":
-    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.markdown('<div class="section-title">NEW MISSION</div>', unsafe_allow_html=True)
+    st.markdown('<div class="clean-card">', unsafe_allow_html=True)
     with st.form("entry_form"):
         d = st.date_input("Date")
         c1, c2 = st.columns([1,2])
@@ -321,25 +340,26 @@ elif selected == "LOGBOOK":
         with c6: tech = st.text_input("Plan")
         with c7: comm = st.text_input("Fact")
         
-        if st.form_submit_button("SAVE MISSION"):
+        if st.form_submit_button("SAVE"):
             try:
                 sheet.append_row([d.strftime("%Y-%m-%d"), s_grp, ex_name, s_num, w_val, r_val, w_val*r_val, tech, comm])
                 st.success("SAVED")
                 st.rerun()
-            except: st.error("ERR")
+            except: st.error("ERROR")
     st.markdown('</div>', unsafe_allow_html=True)
 
 # --- COACH ---
 elif selected == "AI COACH":
-    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.markdown(f'<div class="section-title">INSTRUCTOR // {rank["abbr"]}</div>', unsafe_allow_html=True)
+    st.markdown('<div class="clean-card">', unsafe_allow_html=True)
     if "messages" not in st.session_state: st.session_state.messages = []
     for m in st.session_state.messages:
         with st.chat_message(m["role"]): st.markdown(m["content"])
-    if p := st.chat_input("Intel request..."):
+    if p := st.chat_input("..."):
         st.session_state.messages.append({"role": "user", "content": p})
         with st.chat_message("user"): st.markdown(p)
         model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
-        res = model.generate_content(f"You are a tactical gym coach. Rank: {rank['title']}. Q: {p}")
+        res = model.generate_content(f"Tactical fit coach. User Rank: {rank['title']}. Q: {p}")
         with st.chat_message("assistant"): st.markdown(res.text)
         st.session_state.messages.append({"role": "assistant", "content": res.text})
     st.markdown('</div>', unsafe_allow_html=True)
