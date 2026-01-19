@@ -19,93 +19,75 @@ st.set_page_config(
 )
 
 # --- 2. КОНФИГУРАЦИЯ ---
-# ЦВЕТА (CAMO PALETTE)
-CAMO_DARK = "#121410"       # Deep Dark Green/Black
-CAMO_GREEN = "#4b5320"      # Army Green
-CAMO_TEXT = "#8f9779"       # Muted Text
-ACCENT_GOLD = "#FFD700"     # Rank Gold
+CAMO_DARK = "#141414"       # Темный фон
+CAMO_PANEL = "#1E201B"      # Фон панелей
+CAMO_GREEN = "#4b5320"      # Армейский зеленый
+CAMO_TEXT = "#A0A0A0"       # Серый текст
+ACCENT_GOLD = "#FFD700"     # Золото
 ALERT_RED = "#8B0000"
 
 AVATAR_URL = "https://i.ibb.co.com/TDhQXVTR/unnamed-3.jpg"
 USER_BIRTHDAY = date(1985, 2, 20)
 USER_WEIGHT_CURRENT = 85.0 
 
-# --- 3. ГЕНЕРАТОР ШЕВРОНОВ (NANO BANANO SVG) ---
-# Уменьшил размер viewbox и логику рисования
+# --- 3. ГЕНЕРАТОР ШЕВРОНОВ (УМЕНЬШЕННЫЕ) ---
 def get_rank_svg(rank_type, grade):
     color = ACCENT_GOLD
-    # Размер холста уменьшен визуально в CSS, но здесь рисуем в векторе 100х100 для четкости
-    svg = f'<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 100 100" fill="none" stroke="{color}" stroke-width="6" stroke-linecap="round">'
+    # Уменьшили viewBox и stroke-width для четкости в малом размере
+    svg = f'<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 100 100" fill="none" stroke="{color}" stroke-width="8" stroke-linecap="round">'
     
     if rank_type == "ENLISTED":
-        # Chevrons (^)
         chevrons = min(grade + 1, 3) if grade < 3 else 3
         rockers = 0
-        if grade >= 3: rockers = 1 # CPL/SPC/SGT logic simplified for visual
+        if grade >= 3: rockers = 1 
         if grade >= 5: rockers = 2
         if grade >= 7: rockers = 3
         
-        # Draw Chevrons
+        # Галочки вверх
         for i in range(chevrons):
-            y = 30 + (i * 15)
+            y = 35 + (i * 15)
             svg += f'<path d="M15,{y} L50,{y-25} L85,{y}" />'
-            
-        # Draw Rockers (Arc underneath)
+        # Дуги снизу
         for i in range(rockers):
-            y = 65 + (i * 10)
+            y = 65 + (i * 12)
             svg += f'<path d="M15,{y-10} Q50,{y+15} 85,{y-10}" />'
             
     elif rank_type == "OFFICER":
-        # Bars and Oak Leaves logic simplified
-        if grade == 0: # 2LT (1 Bar)
-            svg += f'<rect x="40" y="20" width="20" height="60" fill="{color}" stroke="none"/>'
-        elif grade == 1: # 1LT (1 Bar Filled - visual diff)
-            svg += f'<rect x="30" y="20" width="40" height="60" fill="{color}" stroke="none"/>'
-        elif grade == 2: # CPT (2 Bars)
+        if grade == 0: # 2LT
+            svg += f'<rect x="42" y="20" width="16" height="60" fill="{color}" stroke="none"/>'
+        elif grade == 1: # 1LT
+            svg += f'<rect x="35" y="20" width="30" height="60" fill="{color}" stroke="none"/>'
+        elif grade == 2: # CPT
             svg += f'<rect x="25" y="20" width="15" height="60" fill="{color}" stroke="none"/>'
             svg += f'<rect x="60" y="20" width="15" height="60" fill="{color}" stroke="none"/>'
-        elif grade >= 3 and grade <= 5: # MAJ/LTC/COL (Oak Leaf/Eagle rep)
+        elif grade >= 3 and grade <= 5: # MAJ - COL
             svg += '<path d="M50,10 L80,40 L65,80 L35,80 L20,40 Z" fill="{color}" stroke="none"/>'.format(color=color)
-        elif grade >= 6: # GENERALS (Stars)
-            stars = grade - 5
-            size = 20
-            start_x = 50 - ((stars-1)*15)
-            for i in range(stars):
-                cx = start_x + (i*30)
-                # Simple star shape
-                svg += f'<circle cx="{cx}" cy="50" r="8" fill="{color}" stroke="none"/>'
+        elif grade >= 6: # GENERALS
+            svg += f'<circle cx="50" cy="50" r="20" fill="{color}" stroke="none"/>'
 
     svg += '</svg>'
     b64 = base64.b64encode(svg.encode('utf-8')).decode("utf-8")
     return f"data:image/svg+xml;base64,{b64}"
 
-# --- ПОЛНЫЙ СПИСОК ЗВАНИЙ ---
-# Min XP, Max XP, Title, Abbr, Type, Grade (for svg)
+# --- ПОЛНЫЙ СПИСОК ЗВАНИЙ (XP, Title, Abbr, Type, Grade) ---
 FULL_RANK_SYSTEM = [
-    # ENLISTED
     (0, 24, "РЕКРУТ", "PV1", "ENLISTED", 0),
     (25, 49, "РЯДОВОЙ", "PV2", "ENLISTED", 1),
     (50, 99, "РЯДОВОЙ 1 КЛ", "PFC", "ENLISTED", 2),
     (100, 149, "СПЕЦИАЛИСТ", "SPC", "ENLISTED", 3),
     (150, 199, "КАПРАЛ", "CPL", "ENLISTED", 3),
     (200, 299, "СЕРЖАНТ", "SGT", "ENLISTED", 4),
-    (300, 399, "ШТАБ-СЕРЖАНТ", "SSG", "ENLISTED", 5), # <- Твой текущий уровень (376)
+    (300, 399, "ШТАБ-СЕРЖАНТ", "SSG", "ENLISTED", 5),
     (400, 499, "СЕРЖАНТ 1 КЛ", "SFC", "ENLISTED", 6),
     (500, 649, "МАСТЕР-СЕРЖАНТ", "MSG", "ENLISTED", 7),
-    (650, 799, "ПЕРВЫЙ СЕРЖАНТ", "1SG", "ENLISTED", 7),
+    (650, 799, "1-Й СЕРЖАНТ", "1SG", "ENLISTED", 7),
     (800, 999, "СЕРЖАНТ-МАЙОР", "SGM", "ENLISTED", 8),
-    
-    # OFFICERS (Starts at 1000 XP for gameplay balance)
-    (1000, 1199, "2-Й ЛЕЙТЕНАНТ", "2LT", "OFFICER", 0),
-    (1200, 1499, "1-Й ЛЕЙТЕНАНТ", "1LT", "OFFICER", 1),
-    (1500, 1999, "КАПИТАН", "CPT", "OFFICER", 2),
-    (2000, 2999, "МАЙОР", "MAJ", "OFFICER", 3),
-    (3000, 3999, "ПОДПОЛКОВНИК", "LTC", "OFFICER", 4),
-    (4000, 4999, "ПОЛКОВНИК", "COL", "OFFICER", 5),
-    (5000, 6999, "БРИГАДНЫЙ ГЕНЕРАЛ", "BG", "OFFICER", 6),
-    (7000, 9999, "ГЕНЕРАЛ-МАЙОР", "MG", "OFFICER", 7),
-    (10000, 14999, "ГЕНЕРАЛ-ЛЕЙТЕНАНТ", "LTG", "OFFICER", 8),
-    (15000, 999999, "ГЕНЕРАЛ", "GEN", "OFFICER", 9)
+    (1000, 1499, "2-Й ЛЕЙТЕНАНТ", "2LT", "OFFICER", 0),
+    (1500, 1999, "1-Й ЛЕЙТЕНАНТ", "1LT", "OFFICER", 1),
+    (2000, 2999, "КАПИТАН", "CPT", "OFFICER", 2),
+    (3000, 4999, "МАЙОР", "MAJ", "OFFICER", 3),
+    (5000, 7999, "ПОДПОЛКОВНИК", "LTC", "OFFICER", 4),
+    (8000, 99999, "ПОЛКОВНИК", "COL", "OFFICER", 5)
 ]
 
 # --- 4. ФУНКЦИИ ---
@@ -115,14 +97,17 @@ def get_rank_data(xp):
             needed = r_max - r_min + 1
             current = xp - r_min
             percent = int((current / needed) * 100)
-            to_go = r_max - xp + 1
             return {
                 "title": title, "abbr": abbr, 
                 "icon": get_rank_svg(r_type, grade), 
-                "progress": percent, "next_xp": to_go,
-                "current_min": r_min, "current_max": r_max
+                "progress": percent, 
+                "current_xp": xp,
+                "next_xp_total": r_max + 1,
+                "xp_in_level": current,
+                "xp_needed": needed
             }
-    return {"title": "GOD", "abbr": "GOD", "icon": get_rank_svg("OFFICER", 9), "progress": 100, "next_xp": 0}
+    # Если больше максимума
+    return {"title": "ГЕНЕРАЛ", "abbr": "GEN", "icon": get_rank_svg("OFFICER", 6), "progress": 100, "current_xp": xp, "next_xp_total": xp, "xp_in_level": 0, "xp_needed": 1}
 
 def calculate_age(birthdate):
     today = date.today()
@@ -133,70 +118,79 @@ def detect_muscle_group(exercise_name):
     if any(x in ex for x in ['жим лежа', 'жим гантелей', 'бабочка', 'chest', 'отжимания', 'брусья', 'груд', 'жим в тренажере']): return "ГРУДЬ"
     if any(x in ex for x in ['тяга', 'подтягивания', 'спина', 'back', 'row', 'становая']): return "СПИНА"
     if any(x in ex for x in ['присед', 'ноги', 'выпады', 'legs', 'squat', 'разгибания', 'сгибания']): return "НОГИ"
-    if any(x in ex for x in ['бицепс', 'трицепс', 'молот', 'arms', 'bicep', 'концентрированный']): return "РУКИ"
+    if any(x in ex for x in ['бицепс', 'трицепс', 'молот', 'arms', 'bicep', 'концентрированный', 'французский']): return "РУКИ"
     if any(x in ex for x in ['жим стоя', 'плечи', 'махи', 'shouder', 'press', 'разведение']): return "ПЛЕЧИ"
     if any(x in ex for x in ['пресс', 'планка', 'abs', 'core', 'скручивания']): return "ПРЕСС"
     return "ОБЩЕЕ"
 
-# --- 5. TACTICAL CAMO CSS (BLACK OPS FONT EVERYWHERE) ---
+# --- 5. CSS (ИСПРАВЛЕННЫЙ И ПОЧИЩЕННЫЙ) ---
 st.markdown(f"""
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap');
 
-    /* ГЛОБАЛЬНЫЙ ШРИФТ */
-    html, body, [class*="css"], font, span, div, button, input, select, textarea, h1, h2, h3, h4, h5, h6 {{
-        font-family: 'Black Ops One', cursive !important;
-    }}
-
+    /* Основной фон и шрифт */
     .stApp {{
         background-color: {CAMO_DARK};
+        font-family: 'Roboto Mono', monospace; /* Моноширинный для данных */
         color: #E0E0E0;
     }}
     
     #MainMenu, footer, header {{ visibility: hidden; }}
 
-    /* КАРТОЧКА КАМУФЛЯЖ */
+    /* Заголовки и акценты - Black Ops */
+    .tac-font {{ font-family: 'Black Ops One', cursive; }}
+    
+    /* Карточка камуфляж */
     .camo-card {{
-        background-color: #242621;
+        background-color: {CAMO_PANEL};
         border: 1px solid #333;
-        border-left: 5px solid {CAMO_GREEN};
+        border-left: 4px solid {CAMO_GREEN};
         padding: 15px;
         margin-bottom: 20px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.5);
     }}
 
-    /* ПРОФИЛЬ */
+    /* Профиль */
     .avatar-area {{
         width: 80px; height: 80px; 
-        border: 2px solid {ACCENT_GOLD}; border-radius: 10px;
+        border: 2px solid {ACCENT_GOLD}; 
+        border-radius: 50%; /* КРУГЛЫЙ АВАТАР */
         overflow: hidden; float: left; margin-right: 15px;
+        box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
     }}
     .avatar-img {{ width: 100%; height: 100%; object-fit: cover; }}
     
-    .user-name {{ font-size: 28px; color: #FFF; margin: 0; line-height: 1; }}
+    .user-name {{
+        font-family: 'Black Ops One', cursive; 
+        font-size: 26px; 
+        color: #FFF; 
+        margin: 0; line-height: 1.2;
+        letter-spacing: 1px;
+    }}
     
-    /* ЗВАНИЕ И ПРОГРЕСС */
-    .rank-display {{ font-size: 16px; color: {ACCENT_GOLD}; margin-top: 5px; cursor: pointer; }}
-    .rank-icon-img {{ height: 25px; width: auto; vertical-align: middle; margin-left: 10px; }}
-    
+    /* Прогресс бар */
     .progress-track {{
-        width: 100%; height: 12px; background: #111; border: 1px solid #444; margin-top: 8px;
+        width: 100%; height: 10px; background: #111; border: 1px solid #444; margin-top: 8px;
     }}
     .progress-fill {{ 
         height: 100%; 
         background: repeating-linear-gradient(45deg, {CAMO_GREEN}, {CAMO_GREEN} 10px, #3a4019 10px, #3a4019 20px); 
     }}
     
+    /* Бейджи */
     .stat-badge {{
-        background: #111; color: {CAMO_TEXT}; padding: 2px 8px; 
-        border: 1px solid {CAMO_GREEN}; font-size: 12px; margin-right: 5px;
+        background: #111; color: {CAMO_TEXT}; padding: 3px 8px; 
+        border: 1px solid {CAMO_GREEN}; font-size: 11px; margin-right: 5px;
+        font-family: 'Black Ops One', cursive;
     }}
 
-    /* EXPANDER STYLE (СПИСОК ЗВАНИЙ) */
+    /* Список званий (Expander) */
     .streamlit-expanderHeader {{
-        background-color: #242621 !important;
-        color: {CAMO_TEXT} !important;
+        background-color: {CAMO_PANEL} !important;
+        color: {ACCENT_GOLD} !important;
         border: 1px solid #333 !important;
+        font-family: 'Black Ops One', cursive !important;
         font-size: 14px !important;
     }}
     .rank-row-item {{
@@ -205,35 +199,37 @@ st.markdown(f"""
     }}
     .rank-row-active {{
         background-color: rgba(255, 215, 0, 0.1);
-        border-left: 3px solid {ACCENT_GOLD};
+        border-left: 2px solid {ACCENT_GOLD};
     }}
 
-    /* МЕНЮ */
-    div[data-testid="stHorizontalBlock"] button {{
-        border-radius: 0px !important;
-    }}
-
-    /* ЗАГОЛОВКИ */
+    /* Заголовки разделов */
     .tac-header {{
-        font-size: 20px; color: {CAMO_TEXT};
-        border-bottom: 2px solid {CAMO_GREEN}; padding-bottom: 5px; margin: 25px 0 10px 0;
+        font-family: 'Black Ops One', cursive; 
+        font-size: 18px; color: {CAMO_TEXT};
+        border-bottom: 2px solid {CAMO_GREEN}; 
+        padding-bottom: 5px; margin: 20px 0 10px 0;
+        text-transform: uppercase;
     }}
 
-    /* КНОПКИ КАЛЕНДАРЯ */
-    .cal-btn {{
-        width: 100%; height: 45px; border: 1px solid #333; 
-        background: #1a1a1a; color: #555; font-size: 14px;
-        cursor: pointer; display: flex; align-items: center; justify-content: center;
+    /* Кнопки календаря (СЕТКА) */
+    .cal-grid {{
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 5px;
+        margin-top: 10px;
     }}
-    .cal-btn:hover {{ border-color: {ACCENT_GOLD}; color: {ACCENT_GOLD}; }}
-    .cal-btn.trained {{ background: {CAMO_GREEN}; color: #FFF; }}
-    .cal-btn.missed {{ background: {ALERT_RED}; color: #FFF; opacity: 0.5; }}
-    .cal-btn.today {{ border: 2px solid {ACCENT_GOLD}; color: {ACCENT_GOLD}; }}
+    div.stButton > button {{
+        width: 100%; border: 1px solid #333; 
+        background: #1a1a1a; color: #777; 
+        font-family: 'Black Ops One', cursive;
+        border-radius: 4px;
+    }}
+    /* Цвета кнопок календаря через инлайн-стили в Python, здесь база */
     
-    /* INPUTS */
+    /* Поля ввода */
     input, textarea, select {{ 
         background: #111 !important; color: {ACCENT_GOLD} !important; 
-        border: 1px solid #444 !important; font-family: 'Black Ops One', cursive !important;
+        border: 1px solid #444 !important; font-family: 'Roboto Mono' !important;
     }}
     </style>
 """, unsafe_allow_html=True)
@@ -269,7 +265,7 @@ rank = get_rank_data(total_xp)
 user_age = calculate_age(USER_BIRTHDAY)
 trained_dates = set(df['День/Дата'].dt.date) if not df.empty else set()
 
-# --- 7. UI ПРОФИЛЯ ---
+# --- 7. ПРОФИЛЬ (CAMO) ---
 st.markdown(f"""
 <div class="camo-card" style="display:flex; align-items:center;">
     <div class="avatar-area"><img src="{AVATAR_URL}" class="avatar-img"></div>
@@ -281,27 +277,32 @@ st.markdown(f"""
             <span class="stat-badge" style="border-color:{ACCENT_GOLD}; color:{ACCENT_GOLD}">XP: {total_xp}</span>
         </div>
         <div class="progress-track"><div class="progress-fill" style="width: {rank['progress']}%;"></div></div>
-        <div style="font-size:10px; color:#555; text-align:right;">СЛЕД. РАНГ: {rank['next_xp']} XP</div>
+        <div style="font-family:'Roboto Mono'; font-size:10px; color:#777; text-align:right; margin-top:2px;">
+            ЦЕЛЬ: {rank['next_xp_total']} XP (ЕЩЕ {rank['xp_needed'] - rank['xp_in_level']})
+        </div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# РАСКРЫВАЮЩИЙСЯ СПИСОК ЗВАНИЙ
-with st.expander(f"{rank['title']} // {rank['abbr']} (НАЖМИ)"):
+# СПИСОК ЗВАНИЙ (EXPANDER)
+with st.expander(f"{rank['title']} // {rank['abbr']} (ПОСМОТРЕТЬ СПИСОК)"):
     for r_min, r_max, title, abbr, r_type, grade in FULL_RANK_SYSTEM:
         is_active = (title == rank['title'])
-        active_class = "rank-row-active" if is_active else ""
+        bg_style = "background-color:rgba(255,215,0,0.1); border-left:3px solid #FFD700;" if is_active else ""
         text_color = ACCENT_GOLD if is_active else "#777"
         icon_html = get_rank_svg(r_type, grade)
         
+        # Индикатор XP для каждого уровня
+        xp_status = "✅ ВЫПОЛНЕНО" if total_xp > r_max else (f"🔒 НУЖНО: {r_min}" if total_xp < r_min else "⚡ ТЕКУЩИЙ")
+        
         st.markdown(f"""
-        <div class="rank-row-item {active_class}">
-            <img src="{icon_html}" style="height:30px; width:30px; margin-right:15px;">
+        <div style="display:flex; align-items:center; padding:8px; border-bottom:1px solid #333; {bg_style}">
+            <img src="{icon_html}" style="height:25px; width:25px; margin-right:15px;">
             <div style="flex-grow:1; color:{text_color};">
-                <div style="font-size:14px;">{title}</div>
-                <div style="font-size:10px; opacity:0.7;">XP: {r_min} - {r_max}</div>
+                <div style="font-family:'Black Ops One'; font-size:14px;">{title}</div>
+                <div style="font-family:'Roboto Mono'; font-size:10px; opacity:0.7;">{xp_status}</div>
             </div>
-            {'<div style="color:'+ACCENT_GOLD+';">◀ ТЫ ТУТ</div>' if is_active else ''}
+            <div style="font-family:'Roboto Mono'; font-size:10px; color:#555;">{r_min}-{r_max} XP</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -315,7 +316,7 @@ selected = option_menu(
     orientation="horizontal",
     styles={
         "container": {"padding": "0!important", "background-color": "transparent"},
-        "nav-link": {"font-size": "14px", "color": "#777", "margin": "2px"},
+        "nav-link": {"font-size": "14px", "color": "#777", "margin": "2px", "font-family": "Black Ops One"},
         "nav-link-selected": {"background-color": CAMO_GREEN, "color": "#FFF", "border": "1px solid #6b7536"},
     }
 )
@@ -323,7 +324,6 @@ selected = option_menu(
 # --- 9. ДАШБОРД ---
 if selected == "ДАШБОРД":
     
-    # Инициализация календаря
     if 'c_year' not in st.session_state: st.session_state.c_year = date.today().year
     if 'c_month' not in st.session_state: st.session_state.c_month = date.today().month
     if 'sel_date' not in st.session_state: st.session_state.sel_date = None
@@ -340,23 +340,21 @@ if selected == "ДАШБОРД":
         st.session_state.c_month = m
         st.session_state.c_year = y
 
-    # Встроенная навигация
-    c_l, c_c, c_r = st.columns([1,4,1])
-    with c_l: st.button("<", on_click=change_m, args=(-1,), key="prev")
-    with c_c: 
+    col_l, col_c, col_r = st.columns([1,4,1])
+    with col_l: st.button("<", on_click=change_m, args=(-1,), key="p_m")
+    with col_c: 
         mn = calendar.month_name[st.session_state.c_month].upper()
-        st.markdown(f"<div style='text-align:center; font-size:20px; color:{ACCENT_GOLD}; padding-top:5px;'>{mn} {st.session_state.c_year}</div>", unsafe_allow_html=True)
-    with c_r: st.button(">", on_click=change_m, args=(1,), key="next")
+        st.markdown(f"<div class='tac-font' style='text-align:center; font-size:20px; color:{ACCENT_GOLD}; padding-top:5px;'>{mn} {st.session_state.c_year}</div>", unsafe_allow_html=True)
+    with col_r: st.button(">", on_click=change_m, args=(1,), key="n_m")
 
     cal = calendar.monthcalendar(st.session_state.c_year, st.session_state.c_month)
     today = date.today()
     
-    # Дни недели
-    cols = st.columns(7)
+    # Сетка кнопок
+    cols_header = st.columns(7)
     for i, d in enumerate(["ПН","ВТ","СР","ЧТ","ПТ","СБ","ВС"]):
-        cols[i].markdown(f"<div style='text-align:center; font-size:12px; color:#555;'>{d}</div>", unsafe_allow_html=True)
+        cols_header[i].markdown(f"<div style='text-align:center; font-size:10px; color:#555;'>{d}</div>", unsafe_allow_html=True)
 
-    # Дни
     for week in cal:
         cols = st.columns(7)
         for i, day in enumerate(week):
@@ -366,18 +364,17 @@ if selected == "ДАШБОРД":
                 is_tod = (curr == today)
                 
                 label = f"{day}"
+                # Кнопка дня
                 if cols[i].button(label, key=f"d_{curr}"):
                     if is_tr: st.session_state.sel_date = curr
                     else: st.session_state.sel_date = None
 
-                # CSS Hack for colors
-                bg = "#1a1a1a"
-                clr = "#555"
-                brd = "1px solid #333"
+                # CSS Hack
+                bg = "#1a1a1a"; clr = "#555"; brd = "1px solid #333"
                 if is_tr: 
                     bg = CAMO_GREEN; clr = "#FFF"; brd = f"1px solid {ACCENT_GOLD}"
                 elif curr < today: 
-                    bg = "#2a1515"; clr = "#a55" # Dark Red bg
+                    bg = "#2a1515"; clr = "#a55" # Missed
                 if is_tod: 
                     brd = f"2px solid {ACCENT_GOLD}"; clr = ACCENT_GOLD
                 
@@ -393,19 +390,19 @@ if selected == "ДАШБОРД":
                 </script>""", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # ФИЛЬТР И РАДАР
+    # ФИЛЬТР
     filtered_df = df.copy()
-    filter_msg = "ОБЩАЯ СТАТИСТИКА"
-    
+    filter_msg = "ОБЩАЯ СТАТИСТИКА (ВСЁ ВРЕМЯ)"
     if st.session_state.sel_date:
         filtered_df = df[df['День/Дата'].dt.date == st.session_state.sel_date]
-        filter_msg = f"ОТЧЕТ ЗА {st.session_state.sel_date.strftime('%d.%m.%Y')}"
+        filter_msg = f"ОТЧЕТ ЗА: {st.session_state.sel_date.strftime('%d.%m.%Y')}"
         if st.button("СБРОСИТЬ ФИЛЬТР"):
             st.session_state.sel_date = None
             st.rerun()
             
-    st.markdown(f"<div style='text-align:center; color:{ACCENT_GOLD}; margin-bottom:10px;'>{filter_msg}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='tac-font' style='text-align:center; color:{ACCENT_GOLD}; margin-bottom:10px;'>{filter_msg}</div>", unsafe_allow_html=True)
 
+    # РАДАР
     st.markdown('<div class="tac-header">СТАТУС БРОНИ</div>', unsafe_allow_html=True)
     st.markdown('<div class="camo-card">', unsafe_allow_html=True)
     if not filtered_df.empty:
@@ -415,12 +412,11 @@ if selected == "ДАШБОРД":
         radar_df = pd.DataFrame({"Muscle": target_muscles})
         radar_df = radar_df.merge(muscle_data, on="Muscle", how="left").fillna(0)
         
-        # Исправленный цвет (RGBA)
         fig = go.Figure(data=go.Scatterpolar(
             r=radar_df['Sets'], theta=radar_df['Muscle'], fill='toself',
             line=dict(color=ACCENT_GOLD, width=3),
             fillcolor='rgba(255, 215, 0, 0.2)',
-            marker=dict(color=ACCENT_GOLD, size=8)
+            marker=dict(color=ACCENT_GOLD, size=6)
         ))
         fig.update_layout(
             polar=dict(
