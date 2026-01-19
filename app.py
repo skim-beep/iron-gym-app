@@ -10,7 +10,7 @@ import calendar
 from streamlit_option_menu import option_menu
 import base64
 
-# --- 1. НАСТРОЙКИ ---
+# --- 1. НАСТРОЙКА ---
 st.set_page_config(
     page_title="IRON GYM OS",
     page_icon="🦅",
@@ -18,7 +18,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. ЦВЕТА (GLOBAL VARIABLES) ---
+# --- 2. КОНФИГУРАЦИЯ ---
 CAMO_DARK = "#0e0e0e"
 CAMO_PANEL = "#1c1f1a"
 CAMO_GREEN = "#4b5320"
@@ -37,7 +37,6 @@ def get_rank_svg(rank_type, grade):
     if rank_type == "OFFICER":
         if grade in [1, 2, 4, 5] or grade >= 6: color = ACCENT_SILVER
     
-    # SVG 30x30
     svg = f'<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 100 100" fill="none" stroke="{color}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">'
     
     if rank_type == "ENLISTED":
@@ -104,20 +103,16 @@ st.markdown(f"""
     @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap');
 
-    /* GLOBAL */
     .stApp {{ background-color: {CAMO_DARK}; color: {TEXT_COLOR}; font-family: 'Roboto Mono', monospace; }}
     #MainMenu, footer, header {{ visibility: hidden; }}
 
-    /* FONTS */
-    h1, h2, h3, .tac-font {{ font-family: 'Oswald', sans-serif !important; text-transform: uppercase; }}
+    h1, h2, h3, .tac-font {{ font-family: 'Oswald', sans-serif !important; letter-spacing: 1px; text-transform: uppercase; }}
     
-    /* CAMO CARD */
     .camo-card {{
         background-color: {CAMO_PANEL}; border: 1px solid #333; border-left: 4px solid {CAMO_GREEN};
-        padding: 15px; margin-bottom: 20px; border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        padding: 15px; margin-bottom: 20px; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     }}
 
-    /* PROFILE */
     .avatar-area {{ width: 80px; height: 80px; border: 2px solid {ACCENT_GOLD}; border-radius: 50%; overflow: hidden; float: left; margin-right: 15px; }}
     .avatar-img {{ width: 100%; height: 100%; object-fit: cover; }}
     .user-name {{ font-family: 'Oswald', sans-serif; font-size: 28px; color: #FFF; margin: 0; line-height: 1.1; }}
@@ -125,22 +120,258 @@ st.markdown(f"""
     .progress-fill {{ height: 100%; background: {CAMO_GREEN}; }}
     .stat-badge {{ background: #111; color: {ACCENT_GOLD}; padding: 3px 8px; border: 1px solid {CAMO_GREEN}; font-size: 11px; margin-right: 5px; font-family: 'Oswald'; }}
 
-    /* HEADERS */
     .tac-header {{
         font-family: 'Oswald', sans-serif; font-size: 18px; color: {TEXT_COLOR};
         border-bottom: 2px solid {CAMO_GREEN}; padding-bottom: 5px; margin: 20px 0 10px 0; text-transform: uppercase;
     }}
 
-    /* EXPANDER */
     .streamlit-expanderHeader {{ background-color: {CAMO_PANEL} !important; color: {ACCENT_GOLD} !important; border: 1px solid #333 !important; font-family: 'Oswald' !important; }}
     .rank-row-item {{ display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #333; }}
     
     /* --- CALENDAR GRID FIX --- */
-    /* Удаляем отступы колонок, чтобы кнопки слиплись в плитку */
-    div[data-testid="column"] {{ padding: 0 !important; gap: 0 !important; }}
-    div[data-testid="stHorizontalBlock"] {{ gap: 0 !important; }}
+    /* Убираем отступы между колонками */
+    [data-testid="column"] {{ padding: 0 !important; margin: 0 !important; }}
+    [data-testid="stHorizontalBlock"] {{ gap: 0 !important; }}
     
     /* Кнопки календаря */
     div.stButton > button {{
-        width: 100%; 
-        aspect
+        width: 100%; aspect-ratio: 1 / 1; 
+        border: 1px solid #1a1a1a; background: #121212; 
+        color: #555; border-radius: 0px; 
+        font-family: 'Oswald', sans-serif; font-weight: bold; font-size: 14px;
+        margin: 0px !important; padding: 0px !important;
+        display: flex; align-items: center; justify-content: center; box-shadow: none;
+    }}
+    div.stButton > button:hover {{ border: 1px solid {ACCENT_GOLD}; color: {ACCENT_GOLD}; z-index: 5; }}
+    
+    /* INPUTS */
+    input, textarea, select {{ background: #111 !important; color: {ACCENT_GOLD} !important; border: 1px solid #444 !important; font-family: 'Roboto Mono' !important; }}
+    </style>
+""", unsafe_allow_html=True)
+
+# --- 6. DATA ---
+try:
+    API_KEY = st.secrets["GOOGLE_API_KEY"]
+    genai.configure(api_key=API_KEY)
+    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(json.loads(st.secrets["service_account_json"], strict=False), scope)
+    client = gspread.authorize(creds)
+    sheet = client.open("IRON_GYM_DB").sheet1
+    raw_data = sheet.get_all_records()
+    df = pd.DataFrame(raw_data) if raw_data else pd.DataFrame()
+    
+    if not df.empty:
+        df.columns = df.columns.str.strip()
+        for col in ['Вес (кг)', 'Тоннаж']:
+            if col in df.columns: df[col] = df[col].astype(str).str.replace(',', '.')
+        df['Вес (кг)'] = pd.to_numeric(df['Вес (кг)'], errors='coerce').fillna(0)
+        df['Повт'] = pd.to_numeric(df['Повт'], errors='coerce').fillna(0)
+        if 'Сет' not in df.columns: df['Сет'] = "-"
+        df['Сет'] = df['Сет'].astype(str).replace('', '-')
+        df['День/Дата'] = pd.to_datetime(df['День/Дата'], errors='coerce')
+        df = df.dropna(subset=['День/Дата'])
+        df['Muscle'] = df['Упражнение'].apply(detect_muscle_group)
+except: df = pd.DataFrame()
+
+total_xp = len(df)
+rank = get_rank_data(total_xp)
+user_age = calculate_age(USER_BIRTHDAY)
+trained_dates = set(df['День/Дата'].dt.date) if not df.empty else set()
+
+# --- 7. UI PROFILE ---
+st.markdown(f"""
+<div class="camo-card" style="display:flex; align-items:center;">
+    <div class="avatar-area"><img src="{AVATAR_URL}" class="avatar-img"></div>
+    <div style="flex-grow:1;">
+        <div class="user-name">СЕРГЕЙ</div>
+        <div style="margin: 5px 0;">
+            <span class="stat-badge">LVL: {total_xp}</span>
+            <span class="stat-badge">{rank['title']}</span>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width: {rank['progress']}%;"></div></div>
+        <div style="font-size:10px; color:#666; text-align:right; font-family:'Roboto Mono';">NEXT: {rank['xp_needed']} XP</div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+with st.expander(f"{rank['title']} // {rank['abbr']} (СПИСОК)"):
+    for r_min, r_max, title, abbr, r_type, grade in FULL_RANK_SYSTEM:
+        is_active = (title == rank['title'])
+        bg = "background-color:rgba(255,215,0,0.1); border-left:2px solid #FFD700;" if is_active else ""
+        col = ACCENT_GOLD if is_active else "#777"
+        st.markdown(f"""<div class="rank-row-item" style="{bg}">
+            <img src="{get_rank_svg(r_type, grade)}" style="height:25px; margin-right:10px;">
+            <div style="flex-grow:1; color:{col}; font-family:'Oswald';">{title}</div>
+            <div style="font-family:'Roboto Mono'; font-size:10px; color:#555;">{r_min}</div>
+        </div>""", unsafe_allow_html=True)
+
+# --- 8. MENU ---
+selected = option_menu(
+    menu_title=None,
+    options=["ДАШБОРД", "ЖУРНАЛ", "ТРЕНЕР"],
+    icons=["crosshair", "list-task", "robot"],
+    default_index=0,
+    orientation="horizontal",
+    styles={
+        "container": {"padding": "0!important", "background-color": "transparent", "margin-bottom": "20px"},
+        "nav-link": {"font-size": "13px", "color": "#777", "margin": "0px", "font-family": "Oswald"},
+        "nav-link-selected": {"background-color": CAMO_GREEN, "color": "#FFF"},
+    }
+)
+
+# --- 9. DASHBOARD ---
+if selected == "ДАШБОРД":
+    
+    if 'c_year' not in st.session_state: st.session_state.c_year = date.today().year
+    if 'c_month' not in st.session_state: st.session_state.c_month = date.today().month
+    if 'sel_date' not in st.session_state: st.session_state.sel_date = None
+
+    # --- 1. РАДАР (ПЕРВЫЙ) ---
+    st.markdown('<div class="tac-header">СТАТУС БРОНИ</div>', unsafe_allow_html=True)
+    st.markdown('<div class="camo-card">', unsafe_allow_html=True)
+    
+    filtered_df = df.copy()
+    f_msg = "ОБЩАЯ СТАТИСТИКА"
+    if st.session_state.sel_date:
+        filtered_df = df[df['День/Дата'].dt.date == st.session_state.sel_date]
+        f_msg = f"ОТЧЕТ ЗА: {st.session_state.sel_date.strftime('%d.%m.%Y')}"
+        if st.button("❌ СБРОСИТЬ ФИЛЬТР"):
+            st.session_state.sel_date = None
+            st.rerun()
+            
+    st.markdown(f"<div style='text-align:center; color:{ACCENT_GOLD}; font-family:Oswald; margin-bottom:5px;'>{f_msg}</div>", unsafe_allow_html=True)
+
+    if not filtered_df.empty:
+        muscle_data = filtered_df.groupby('Muscle')['Сет'].count().reset_index()
+        muscle_data.columns = ['Muscle', 'Sets']
+        target_muscles = ["ГРУДЬ", "СПИНА", "НОГИ", "РУКИ", "ПЛЕЧИ", "ПРЕСС"]
+        radar_df = pd.DataFrame({"Muscle": target_muscles})
+        radar_df = radar_df.merge(muscle_data, on="Muscle", how="left").fillna(0)
+        
+        fig = go.Figure(data=go.Scatterpolar(
+            r=radar_df['Sets'], theta=radar_df['Muscle'], fill='toself',
+            line=dict(color=ACCENT_GOLD, width=2),
+            fillcolor='rgba(255, 215, 0, 0.2)',
+            marker=dict(color=ACCENT_GOLD, size=6)
+        ))
+        fig.update_layout(
+            polar=dict(
+                radialaxis=dict(visible=True, showticklabels=False, linecolor='#333'),
+                angularaxis=dict(linecolor='#333', tickfont=dict(color=TEXT_COLOR, size=11, family="Oswald")),
+                bgcolor='rgba(0,0,0,0)'
+            ),
+            showlegend=False, height=250, margin=dict(l=35, r=35, t=10, b=10),
+            paper_bgcolor='rgba(0,0,0,0)', font=dict(color='#FFF')
+        )
+        st.plotly_chart(fig, use_container_width=True, config={'displayModeBar':False})
+    else: st.info("Нет данных")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # --- 2. КАЛЕНДАРЬ (ПЛИТКА) ---
+    st.markdown('<div class="tac-header">КАЛЕНДАРЬ МИССИЙ</div>', unsafe_allow_html=True)
+    st.markdown('<div class="camo-card" style="padding:5px;">', unsafe_allow_html=True)
+    
+    def change_m(d):
+        m = st.session_state.c_month + d
+        y = st.session_state.c_year
+        if m>12: m=1; y+=1
+        elif m<1: m=12; y-=1
+        st.session_state.c_month = m
+        st.session_state.c_year = y
+
+    c1, c2, c3 = st.columns([1,4,1])
+    with c1: st.button("◀", on_click=change_m, args=(-1,), key="p")
+    with c2: 
+        mn = calendar.month_name[st.session_state.c_month].upper()
+        st.markdown(f"<div style='text-align:center; font-family:Oswald; font-size:18px; color:{ACCENT_GOLD}; padding-top:10px;'>{mn} {st.session_state.c_year}</div>", unsafe_allow_html=True)
+    with c3: st.button("▶", on_click=change_m, args=(1,), key="n")
+
+    cal = calendar.monthcalendar(st.session_state.c_year, st.session_state.c_month)
+    today = date.today()
+    
+    # Headers
+    cols = st.columns(7)
+    for i, d in enumerate(["ПН","ВТ","СР","ЧТ","ПТ","СБ","ВС"]):
+        cols[i].markdown(f"<div style='text-align:center; font-size:10px; color:#555;'>{d}</div>", unsafe_allow_html=True)
+
+    # Grid
+    for week in cal:
+        cols = st.columns(7)
+        for i, day in enumerate(week):
+            if day == 0:
+                cols[i].write("")
+            else:
+                curr = date(st.session_state.c_year, st.session_state.c_month, day)
+                is_tr = curr in trained_dates
+                is_tod = (curr == today)
+                is_fut = (curr > today)
+                
+                label = f"{day}"
+                if cols[i].button(label, key=f"btn_{curr}"):
+                    if is_tr: st.session_state.sel_date = curr
+                    else: st.session_state.sel_date = None
+                    st.rerun()
+
+                bg = "#121212"; fg = "#444"; bdr = "1px solid #1c1c1c"
+                if is_tr: bg = CAMO_GREEN; fg = "#FFF"; bdr = f"1px solid {ACCENT_GOLD}"
+                elif curr < today: bg = "#250000"; fg = "#700"; bdr = "1px solid #300"
+                if is_tod: bdr = f"2px solid {ACCENT_GOLD}"; fg = ACCENT_GOLD
+                if is_fut: fg = "#222"
+
+                st.markdown(f"""<script>
+                    var buttons = window.parent.document.querySelectorAll('div[data-testid="column"] button');
+                    for (var i = 0; i < buttons.length; i++) {{
+                        if (buttons[i].innerText === "{label}") {{
+                            buttons[i].style.backgroundColor = "{bg}";
+                            buttons[i].style.color = "{fg}";
+                            buttons[i].style.border = "{bdr}";
+                        }}
+                    }}
+                </script>""", unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # --- 3. ТАБЛИЦА ---
+    st.markdown('<div class="tac-header">ЖУРНАЛ</div>', unsafe_allow_html=True)
+    if not filtered_df.empty:
+        hdf = filtered_df.copy().sort_values(by=['День/Дата', 'Сет'], ascending=[False, True])
+        hdf['День/Дата'] = hdf['День/Дата'].dt.strftime('%d.%m')
+        st.dataframe(hdf[['День/Дата', 'Сет', 'Упражнение', 'Вес (кг)', 'Повт']], use_container_width=True, hide_index=True)
+
+# --- ЖУРНАЛ ---
+elif selected == "ЖУРНАЛ":
+    st.markdown('<div class="tac-header">НОВАЯ ЗАПИСЬ</div>', unsafe_allow_html=True)
+    st.markdown('<div class="camo-card">', unsafe_allow_html=True)
+    with st.form("entry"):
+        d = st.date_input("ДАТА")
+        c1, c2 = st.columns([1,2])
+        with c1: s_grp = st.text_input("СЕТ", "№1")
+        with c2: ex_name = st.text_input("УПРАЖНЕНИЕ")
+        c3, c4, c5 = st.columns(3)
+        with c3: s_num = st.number_input("ПОДХОД", 1)
+        with c4: w_val = st.number_input("ВЕС", step=2.5)
+        with c5: r_val = st.number_input("ПОВТ", 1)
+        c6, c7 = st.columns(2)
+        with c6: tech = st.text_input("ТЕХНИКА")
+        with c7: comm = st.text_input("КОММЕНТ")
+        if st.form_submit_button("СОХРАНИТЬ"):
+            try:
+                sheet.append_row([d.strftime("%Y-%m-%d"), s_grp, ex_name, s_num, w_val, r_val, w_val*r_val, tech, comm])
+                st.success("OK")
+                st.rerun()
+            except: st.error("ERR")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+elif selected == "ТРЕНЕР":
+    st.markdown(f'<div class="tac-header">ИНСТРУКТОР // {rank["abbr"]}</div>', unsafe_allow_html=True)
+    st.markdown('<div class="camo-card">', unsafe_allow_html=True)
+    if "messages" not in st.session_state: st.session_state.messages = []
+    for m in st.session_state.messages:
+        with st.chat_message(m["role"]): st.markdown(m["content"])
+    if p := st.chat_input("..."):
+        st.session_state.messages.append({"role": "user", "content": p})
+        with st.chat_message("user"): st.markdown(p)
+        model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
+        res = model.generate_content(f"Армейский тренер. Звание: {rank['title']}. Вопрос: {p}")
+        with st.chat_message("assistant"): st.markdown(res.text)
+        st.session_state.messages.append({"role": "assistant", "content": res.text})
+    st.markdown('</div>', unsafe_allow_html=True)
