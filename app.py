@@ -23,10 +23,9 @@ USER_BIRTHDAY = date(1985, 2, 20)
 USER_WEIGHT_CURRENT = 85.0 
 ACCENT_COLOR = "#FFD700" # GOLD
 
-# --- 3. СИСТЕМА ЗВАНИЙ (STABLE LINKS) ---
-# Используем no-referrer ссылки и стабильные SVG
+# --- 3. СИСТЕМА ЗВАНИЙ ---
 RANK_SYSTEM = [
-    (0, 9, "PRIVATE RECRUIT", "PV1", "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/United_States_Army_Star_Logo.svg/200px-United_States_Army_Star_Logo.svg.png"), # Звезда вместо пустоты
+    (0, 9, "PRIVATE RECRUIT", "PV1", "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/United_States_Army_Star_Logo.svg/200px-United_States_Army_Star_Logo.svg.png"), 
     (10, 24, "PRIVATE (PV2)", "PV2", "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/US_Army_E2.svg/100px-US_Army_E2.svg.png"),
     (25, 49, "PFC", "PFC", "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/US_Army_E3.svg/100px-US_Army_E3.svg.png"),
     (50, 74, "SPECIALIST", "SPC", "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/US_Army_E4_SPC.svg/100px-US_Army_E4_SPC.svg.png"),
@@ -57,10 +56,10 @@ def calculate_age(birthdate):
 
 def detect_muscle_group(exercise_name):
     ex = str(exercise_name).lower()
-    if any(x in ex for x in ['жим лежа', 'жим гантелей', 'бабочка', 'chest', 'отжимания', 'брусья', 'груд']): return "ГРУДЬ"
+    if any(x in ex for x in ['жим лежа', 'жим гантелей', 'бабочка', 'chest', 'отжимания', 'брусья', 'груд', 'жим в тренажере']): return "ГРУДЬ"
     if any(x in ex for x in ['тяга', 'подтягивания', 'спина', 'back', 'row']): return "СПИНА"
     if any(x in ex for x in ['присед', 'ноги', 'выпады', 'legs', 'squat', 'бег', 'эллипс', 'разминка']): return "НОГИ/КАРДИО"
-    if any(x in ex for x in ['бицепс', 'трицепс', 'молот', 'arms', 'bicep']): return "РУКИ"
+    if any(x in ex for x in ['бицепс', 'трицепс', 'молот', 'arms', 'bicep', 'концентрированный']): return "РУКИ"
     if any(x in ex for x in ['жим стоя', 'плечи', 'махи', 'shouder', 'press', 'разведение']): return "ПЛЕЧИ"
     if any(x in ex for x in ['пресс', 'планка', 'abs', 'core', 'скручивания']): return "КОР"
     return "ОБЩЕЕ"
@@ -107,7 +106,6 @@ st.markdown(f"""
     }}
     .rank-row {{ display: flex; align-items: center; margin-bottom: 8px; }}
     .rank-title {{ color: {ACCENT_COLOR}; font-weight: 700; margin-right: 10px; font-size: 14px; }}
-    /* ВАЖНО: object-fit contain для иконок */
     .rank-icon-img {{ height: 32px; width: auto; object-fit: contain; filter: drop-shadow(0 0 5px {ACCENT_COLOR}); }}
     
     .progress-track {{
@@ -162,7 +160,6 @@ try:
     df = pd.DataFrame(raw_data) if raw_data else pd.DataFrame()
     
     if not df.empty:
-        # Приведение типов для новой структуры
         df['Вес (кг)'] = pd.to_numeric(df['Вес (кг)'], errors='coerce').fillna(0)
         df['Тоннаж'] = pd.to_numeric(df['Тоннаж'], errors='coerce').fillna(0)
         df['День/Дата'] = pd.to_datetime(df['День/Дата'], errors='coerce')
@@ -185,8 +182,7 @@ with col_sync:
     if st.button("🔄 SYNC"):
         st.rerun()
 
-# ПРОФИЛЬ (HTML)
-# ВАЖНО: referrerPolicy="no-referrer" помогает от блокировок картинок
+# ПРОФИЛЬ
 st.markdown(f"""
 <div class="glass-card profile-card">
     <div class="avatar-area">
@@ -229,7 +225,7 @@ if selected == "DASHBOARD":
     
     st.markdown(f'<div style="color:{ACCENT_COLOR}; font-weight:bold; margin-bottom:10px;">TACTICAL OVERVIEW</div>', unsafe_allow_html=True)
     
-    # RADAR
+    # RADAR (ИСПРАВЛЕН ЦВЕТ)
     st.markdown('<div class="glass-card">', unsafe_allow_html=True)
     if not df.empty:
         muscle_data = df.groupby('Muscle')['Тоннаж'].sum().reset_index()
@@ -237,9 +233,12 @@ if selected == "DASHBOARD":
         radar_df = pd.DataFrame({"Muscle": all_muscles})
         radar_df = radar_df.merge(muscle_data, on="Muscle", how="left").fillna(0)
         
+        # FIX: Используем rgba вместо hex+alpha
         fig = go.Figure(data=go.Scatterpolar(
             r=radar_df['Тоннаж'], theta=radar_df['Muscle'], fill='toself',
-            line_color=ACCENT_COLOR, fillcolor=f'{ACCENT_COLOR}30'
+            line=dict(color=ACCENT_COLOR, width=3),
+            fillcolor='rgba(255, 215, 0, 0.3)', # FIXED COLOR
+            marker=dict(size=6, color=ACCENT_COLOR)
         ))
         fig.update_layout(
             polar=dict(
@@ -302,7 +301,6 @@ if selected == "DASHBOARD":
     if not df.empty:
         hdf = df.copy().sort_values(by='День/Дата', ascending=False)
         hdf['День/Дата'] = hdf['День/Дата'].dt.strftime('%d.%m')
-        # Показываем самые важные колонки для мобилки
         st.dataframe(hdf[['День/Дата', 'Упражнение', 'Вес (кг)', 'Повт']], use_container_width=True, hide_index=True)
 
 # --- LOGBOOK ---
