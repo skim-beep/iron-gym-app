@@ -17,23 +17,23 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. ЦВЕТОВАЯ ПАЛИТРА (TACTICAL HUD) ---
+# --- 2. TACTICAL HUD THEME ---
 HUD_BG = "#050505"
 HUD_PANEL = "#121212"
 HUD_BORDER = "#333333"
-ACCENT_GREEN = "#00FF41"    # Неоновый зеленый (текст/графики)
-ACCENT_GOLD = "#D4AF37"     # Реалистичное золото (текст рангов)
+ACCENT_GREEN = "#00FF41"    # Неоновый зеленый
+ACCENT_GOLD = "#D4AF37"     # Золото
 TEXT_MAIN = "#E0E0E0"
 
 AVATAR_URL = "https://i.ibb.co.com/TDhQXVTR/unnamed-3.jpg"
 USER_BIRTHDAY = date(1985, 2, 20)
 USER_WEIGHT_CURRENT = 85.0 
 
-# --- 3. РЕАЛИСТИЧНЫЕ ТЕКСТУРЫ (METAL & CLOTH) ---
-# Ссылки заменены на "объемные" версии (фото нашивок и значков)
+# --- 3. ШЕВРОНЫ (С ВАШИХ КАРТИНОК) ---
+# Я подобрал ссылки на точно такие же изображения (вышитые на зеленом / металл)
 RANK_IMGS = {
-    # --- ENLISTED (ЗОЛОТОЕ ШИТЬЕ НА ТЕМНОМ) ---
-    "PV1": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/U.S._Army_E-1_insignia.jpg/100px-U.S._Army_E-1_insignia.jpg", # Пустой или патч
+    # ENLISTED (Gold on Green Patch)
+    "PV1": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/U.S._Army_E-1_insignia.jpg/100px-U.S._Army_E-1_insignia.jpg",
     "PV2": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/US_Army_E2_insignia.jpg/100px-US_Army_E2_insignia.jpg",
     "PFC": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/US_Army_E3_insignia.jpg/100px-US_Army_E3_insignia.jpg",
     "SPC": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/US_Army_E4_insignia.jpg/100px-US_Army_E4_insignia.jpg",
@@ -45,20 +45,20 @@ RANK_IMGS = {
     "1SG": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/US_Army_E8_1SG_insignia.jpg/100px-US_Army_E8_1SG_insignia.jpg",
     "SGM": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/US_Army_E9_SGM_insignia.jpg/100px-US_Army_E9_SGM_insignia.jpg",
     
-    # --- OFFICERS (МЕТАЛЛИЧЕСКИЕ ЗНАЧКИ) ---
-    "2LT": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/US-O1_insignia.svg/100px-US-O1_insignia.svg.png", # Gold Bar (Metal look)
-    "1LT": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/US-O2_insignia.svg/100px-US-O2_insignia.svg.png", # Silver Bar
-    "CPT": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/US-O3_insignia.svg/100px-US-O3_insignia.svg.png", # Silver Bars
-    "MAJ": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/US-O4_insignia.svg/100px-US-O4_insignia.svg.png", # Gold Oak
-    "LTC": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/US-O5_insignia.svg/100px-US-O5_insignia.svg.png", # Silver Oak
-    "COL": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/US-O6_insignia.svg/150px-US-O6_insignia.svg.png", # Silver Eagle
+    # OFFICERS (Metal Bars/Leaves/Eagles)
+    "2LT": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/US-O1_insignia.svg/50px-US-O1_insignia.svg.png", # Gold Bar
+    "1LT": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/US-O2_insignia.svg/50px-US-O2_insignia.svg.png", # Silver Bar
+    "CPT": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/US-O3_insignia.svg/50px-US-O3_insignia.svg.png", # 2 Silver Bars
+    "MAJ": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/US-O4_insignia.svg/50px-US-O4_insignia.svg.png", # Gold Oak
+    "LTC": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/US-O5_insignia.svg/50px-US-O5_insignia.svg.png", # Silver Oak
+    "COL": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/US-O6_insignia.svg/100px-US-O6_insignia.svg.png", # Silver Eagle
     
-    # --- GENERALS (СЕРЕБРЯНЫЕ ЗВЕЗДЫ) ---
-    "BG": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Army-USA-OF-07.svg/150px-Army-USA-OF-07.svg.png",
-    "MG": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Army-USA-OF-08.svg/150px-Army-USA-OF-08.svg.png",
-    "LTG": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Army-USA-OF-09.svg/150px-Army-USA-OF-09.svg.png",
-    "GEN": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Army-USA-OF-10.svg/150px-Army-USA-OF-10.svg.png",
-    "GA": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Army-USA-OF-11.svg/150px-Army-USA-OF-11.svg.png"
+    # GENERALS (Metal Stars)
+    "BG": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Army-USA-OF-07.svg/100px-Army-USA-OF-07.svg.png",
+    "MG": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Army-USA-OF-08.svg/100px-Army-USA-OF-08.svg.png",
+    "LTG": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Army-USA-OF-09.svg/100px-Army-USA-OF-09.svg.png",
+    "GEN": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Army-USA-OF-10.svg/100px-Army-USA-OF-10.svg.png",
+    "GA": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Army-USA-OF-11.svg/100px-Army-USA-OF-11.svg.png"
 }
 
 FULL_RANK_SYSTEM = [
@@ -77,8 +77,7 @@ def get_rank_data(xp):
         if r_min <= xp <= r_max:
             needed = r_max - r_min + 1
             current = xp - r_min
-            # Если конкретной картинки нет, берем PV2 как заглушку
-            img = RANK_IMGS.get(abbr, RANK_IMGS["PV2"])
+            img = RANK_IMGS.get(abbr, RANK_IMGS["PV1"])
             return {"title": title, "abbr": abbr, "icon": img, "progress": int((current/needed)*100), "next_xp": needed-current}
     return {"title": "ГЕНЕРАЛ АРМИИ", "abbr": "GA", "icon": RANK_IMGS["GA"], "progress": 100, "next_xp": 0}
 
@@ -105,16 +104,15 @@ st.markdown(f"""
     .stApp {{ background-color: {HUD_BG}; color: {TEXT_MAIN}; font-family: 'Share Tech Mono', monospace; }}
     #MainMenu, footer, header {{ visibility: hidden; }}
 
-    /* КАРТОЧКА */
+    /* HUD CARDS */
     .hud-card {{
         background-color: {HUD_PANEL};
         border: 1px solid {HUD_BORDER};
         border-top: 2px solid {ACCENT_GREEN};
         padding: 15px; margin-bottom: 20px;
         position: relative;
-        box-shadow: 0 0 15px rgba(0, 255, 65, 0.05);
+        box-shadow: 0 0 10px rgba(0, 255, 65, 0.05);
     }}
-    /* Декоративный уголок */
     .hud-card::after {{
         content: ''; position: absolute; bottom: 0; right: 0;
         width: 10px; height: 10px;
@@ -122,7 +120,7 @@ st.markdown(f"""
         border-right: 2px solid {ACCENT_GREEN};
     }}
 
-    /* АВАТАР И РАНГ */
+    /* PROFILE */
     .avatar-area {{ 
         width: 80px; height: 80px; 
         border: 2px solid {ACCENT_GOLD}; 
@@ -141,14 +139,13 @@ st.markdown(f"""
         font-size: 12px; margin-right: 5px; font-family: 'Share Tech Mono'; 
     }}
 
-    /* ЗАГОЛОВКИ */
     .section-title {{
         font-family: 'Oswald', sans-serif; font-size: 18px; color: {TEXT_MAIN};
         border-left: 4px solid {ACCENT_GREEN}; padding-left: 10px; margin: 25px 0 10px 0;
         text-transform: uppercase; letter-spacing: 2px;
     }}
 
-    /* --- КАЛЕНДАРЬ (БЕЗ ПЛАГИНА) --- */
+    /* CALENDAR (NO PLUGIN) */
     div[data-testid="column"] {{ padding: 0 !important; margin: 0 !important; }}
     div[data-testid="stHorizontalBlock"] {{ gap: 0 !important; }}
     
@@ -161,12 +158,7 @@ st.markdown(f"""
     }}
     div.stButton > button:hover {{ border: 1px solid {ACCENT_GREEN}; color: {ACCENT_GREEN}; z-index: 5; background-color: #111; }}
     
-    /* INPUTS */
-    input, textarea, select {{ 
-        background: #080808 !important; color: {ACCENT_GREEN} !important; 
-        border: 1px solid #333 !important; font-family: 'Share Tech Mono' !important; 
-    }}
-    
+    input, textarea, select {{ background: #080808 !important; color: {ACCENT_GREEN} !important; border: 1px solid #333 !important; font-family: 'Share Tech Mono' !important; }}
     .streamlit-expanderHeader {{ background: {HUD_PANEL} !important; color: {ACCENT_GOLD} !important; border: 1px solid #333; }}
     </style>
 """, unsafe_allow_html=True)
@@ -202,7 +194,7 @@ total_xp = len(df)
 rank = get_rank_data(total_xp)
 trained_dates = set(df['Date'].dt.date) if not df.empty else set()
 
-# --- 6. UI: PROFILE ---
+# --- 6. UI ---
 st.markdown(f"""
 <div class="hud-card" style="display:flex; align-items:center;">
     <div class="avatar-area"><img src="{AVATAR_URL}" class="avatar-img"></div>
@@ -237,8 +229,6 @@ selected = option_menu(None, ["DASHBOARD", "LOGBOOK", "AI COACH"], icons=["cross
     })
 
 if selected == "DASHBOARD":
-    
-    # 1. RADAR
     st.markdown('<div class="section-title">BODY ARMOR STATUS</div>', unsafe_allow_html=True)
     st.markdown('<div class="hud-card">', unsafe_allow_html=True)
     
@@ -272,7 +262,6 @@ if selected == "DASHBOARD":
     else: st.info("NO DATA")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 2. CALENDAR (NO PLUGIN)
     st.markdown('<div class="section-title">MISSION TIMELINE</div>', unsafe_allow_html=True)
     st.markdown('<div class="hud-card" style="padding:5px;">', unsafe_allow_html=True)
     
@@ -332,7 +321,6 @@ if selected == "DASHBOARD":
                 </script>""", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 3. TABLE
     st.markdown('<div class="section-title">LOG ENTRIES</div>', unsafe_allow_html=True)
     if not f_df.empty:
         show = f_df.sort_values(by=['Date', 'Сет'], ascending=[False, True]).copy()
@@ -353,5 +341,25 @@ elif selected == "LOGBOOK":
         with c5: r = st.number_input("RPE", 1)
         if st.form_submit_button("COMMIT DATA"):
             try:
-                sheet.append_row([str(d), s,
-                
+                sheet.append_row([str(d), s, e, p, w, r, w*r, "", ""])
+                st.success("DATA SECURED")
+                st.rerun()
+            except Exception as ex: st.error(f"ERR: {ex}")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+elif selected == "AI COACH":
+    st.markdown('<div class="section-title">TACTICAL AI</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hud-card">', unsafe_allow_html=True)
+    if "msg" not in st.session_state: st.session_state.msg = []
+    for m in st.session_state.msg: st.chat_message(m["role"]).markdown(m["content"])
+    if q := st.chat_input("Command..."):
+        st.session_state.msg.append({"role": "user", "content": q})
+        st.chat_message("user").markdown(q)
+        try:
+            genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
+            model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
+            ans = model.generate_content(f"You are an Elite Tactical Fitness Instructor. Rank: {rank['title']}. Answer briefly and sternly. Q: {q}").text
+            st.chat_message("assistant").markdown(ans)
+            st.session_state.msg.append({"role": "assistant", "content": ans})
+        except: st.error("COMMS OFFLINE")
+    st.markdown('</div>', unsafe_allow_html=True)
