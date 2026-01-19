@@ -23,7 +23,7 @@ USER_BIRTHDAY = date(1985, 2, 20)
 USER_WEIGHT_CURRENT = 85.0 
 ACCENT_COLOR = "#D4AF37" # Classic Gold
 
-# --- 3. ЗВАНИЯ (STABLE LINKS) ---
+# --- 3. ЗВАНИЯ ---
 RANK_SYSTEM = [
     (0, 9, "PRIVATE RECRUIT", "PV1", "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/United_States_Army_Star_Logo.svg/200px-United_States_Army_Star_Logo.svg.png"), 
     (10, 24, "PRIVATE (PV2)", "PV2", "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/US_Army_E2.svg/100px-US_Army_E2.svg.png"),
@@ -70,91 +70,63 @@ st.markdown(f"""
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap');
 
-    /* BACKGROUND */
-    .stApp {{
-        background-color: #F2F3F7;
-        font-family: 'Inter', sans-serif;
-        color: #1C1C1E;
-    }}
+    .stApp {{ background-color: #F2F3F7; font-family: 'Inter', sans-serif; color: #1C1C1E; }}
     #MainMenu, footer, header {{ visibility: hidden; }}
 
-    /* CLEAN WHITE CARD */
     .clean-card {{
-        background-color: #FFFFFF;
-        border-radius: 20px;
-        padding: 20px;
-        box-shadow: 0px 4px 15px rgba(0,0,0,0.05);
-        margin-bottom: 20px;
-        border: 1px solid #FFFFFF;
+        background-color: #FFFFFF; border-radius: 20px; padding: 20px;
+        box-shadow: 0px 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #FFFFFF;
     }}
 
-    /* PROFILE */
     .profile-card {{ display: flex; align-items: center; }}
     .avatar-area {{
-        width: 80px; height: 80px; border-radius: 50%;
-        border: 2px solid {ACCENT_COLOR}; 
+        width: 80px; height: 80px; border-radius: 50%; border: 2px solid {ACCENT_COLOR}; 
         overflow: hidden; margin-right: 20px; flex-shrink: 0;
     }}
     .avatar-img {{ width: 100%; height: 100%; object-fit: cover; }}
     .info-area {{ flex-grow: 1; }}
     .user-name {{
-        font-family: 'Black Ops One', cursive; font-size: 26px;
-        color: {ACCENT_COLOR}; letter-spacing: 1px; margin: 0;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        font-family: 'Black Ops One', cursive; font-size: 26px; color: {ACCENT_COLOR}; 
+        letter-spacing: 1px; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }}
     .rank-row {{ display: flex; align-items: center; margin-bottom: 8px; }}
     .rank-title {{ color: #8E8E93; font-weight: 700; margin-right: 10px; font-size: 13px; }}
     .rank-icon-img {{ height: 28px; width: auto; object-fit: contain; }}
     
     .progress-track {{
-        width: 100%; height: 8px; background: #E5E5EA;
-        border-radius: 4px; overflow: hidden; margin-top: 5px;
+        width: 100%; height: 8px; background: #E5E5EA; border-radius: 4px; overflow: hidden; margin-top: 5px;
     }}
-    .progress-fill {{
-        height: 100%; background-color: {ACCENT_COLOR};
-    }}
+    .progress-fill {{ height: 100%; background-color: {ACCENT_COLOR}; }}
     .xp-text {{ font-size: 10px; color: #8E8E93; float: right; margin-top: 2px; font-weight: 600; }}
 
     .stat-badge {{
-        background: #F2F2F7; padding: 4px 10px; border-radius: 8px;
-        font-size: 11px; font-weight: 600; color: #3A3A3C; margin-right: 5px;
-        display: inline-flex; align-items: center;
+        background: #F2F2F7; padding: 4px 10px; border-radius: 8px; font-size: 11px; 
+        font-weight: 600; color: #3A3A3C; margin-right: 5px; display: inline-flex; align-items: center;
     }}
 
-    /* HEADERS */
     .section-title {{
-        font-size: 14px; font-weight: 800; color: #8E8E93; 
-        text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+        font-size: 14px; font-weight: 800; color: #8E8E93; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
     }}
 
-    /* BUTTONS */
     div.stButton > button {{
-        width: 100%; background: #1C1C1E; color: #FFF;
-        border: none; border-radius: 12px; padding: 14px; font-weight: 700;
+        width: 100%; background: #1C1C1E; color: #FFF; border: none; border-radius: 12px; padding: 14px; font-weight: 700;
     }}
-    div.stButton > button:active {{ background: #333; }}
-
-    /* CALENDAR (LIGHT THEME) */
+    
     .calendar-table {{ width: 100%; border-collapse: separate; border-spacing: 4px; }}
     .calendar-cell {{ 
-        text-align: center; padding: 10px 5px; border-radius: 8px; 
-        font-size: 13px; font-weight: 700; background: #F2F2F7; 
-        color: #3A3A3C; 
+        text-align: center; padding: 10px 5px; border-radius: 8px; font-size: 13px; 
+        font-weight: 700; background: #F2F2F7; color: #3A3A3C; 
     }}
     .day-trained {{ background: {ACCENT_COLOR}; color: #FFF; }}
     .day-missed {{ background: #FFB3B3; color: #FFF; }}
     .day-today {{ border: 2px solid {ACCENT_COLOR}; background: transparent; }}
     .day-header {{ color: #8E8E93; font-size: 11px; text-transform: uppercase; padding-bottom: 5px; }}
-    .day-empty {{ background: transparent; }}
-    .day-future {{ color: #D1D1D6; background: transparent; }}
-
-    /* INPUTS */
+    
     div[data-baseweb="input"] {{ background-color: #F2F2F7 !important; border-radius: 8px !important; }}
-    div[data-baseweb="select"] > div {{ background-color: #F2F2F7 !important; border-radius: 8px !important; }}
     </style>
 """, unsafe_allow_html=True)
 
-# --- 6. DATA LOADING (ROBUST) ---
+# --- 6. ЗАГРУЗКА ДАННЫХ (SMART REPAIR) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
@@ -166,27 +138,35 @@ try:
     df = pd.DataFrame(raw_data) if raw_data else pd.DataFrame()
     
     if not df.empty:
-        # CLEANING: Replace commas with dots for numbers
+        # 1. Чистим названия колонок от пробелов (на всякий случай)
+        df.columns = df.columns.str.strip()
+        
+        # 2. Меняем запятые на точки в числах
         for col in ['Вес (кг)', 'Тоннаж']:
             if col in df.columns:
                 df[col] = df[col].astype(str).str.replace(',', '.')
         
-        # Numeric conversion
+        # 3. Приводим типы
         df['Вес (кг)'] = pd.to_numeric(df['Вес (кг)'], errors='coerce').fillna(0)
         df['Повт'] = pd.to_numeric(df['Повт'], errors='coerce').fillna(0)
         df['Тоннаж'] = pd.to_numeric(df['Тоннаж'], errors='coerce').fillna(0)
         
-        # Date parsing (Supports multiple formats)
+        # 4. Обрабатываем колонку "Сет" (если ее нет или она пустая)
+        if 'Сет' not in df.columns:
+            df['Сет'] = "-"
+        df['Сет'] = df['Сет'].astype(str).replace('', '-')
+        
+        # 5. Дата
         df['День/Дата'] = pd.to_datetime(df['День/Дата'], errors='coerce')
         df = df.dropna(subset=['День/Дата'])
         
-        # Calculate Muscle Groups
+        # 6. Мышцы
         df['Muscle'] = df['Упражнение'].apply(detect_muscle_group)
+        
 except Exception as e:
     df = pd.DataFrame()
-    # st.error(f"Data error: {e}") # Uncomment to debug
 
-# Calc Stats
+# Stats
 total_xp = len(df)
 rank = get_rank_data(total_xp)
 user_age = calculate_age(USER_BIRTHDAY)
@@ -203,18 +183,14 @@ with col_sync:
 # ПРОФИЛЬ
 st.markdown(f"""
 <div class="clean-card profile-card">
-    <div class="avatar-area">
-        <img src="{AVATAR_URL}" class="avatar-img">
-    </div>
+    <div class="avatar-area"><img src="{AVATAR_URL}" class="avatar-img"></div>
     <div class="info-area">
         <div class="user-name">SERGEY</div>
         <div class="rank-row">
             <span class="rank-title">{rank['title']}</span>
             <img src="{rank['icon']}" class="rank-icon-img" referrerPolicy="no-referrer">
         </div>
-        <div class="progress-track">
-            <div class="progress-fill" style="width: {rank['progress']}%;"></div>
-        </div>
+        <div class="progress-track"><div class="progress-fill" style="width: {rank['progress']}%;"></div></div>
         <div style="margin-top:4px;">
             <span class="stat-badge">XP: {total_xp}</span>
             <span class="xp-text">NEXT: {rank['next_xp']}</span>
@@ -243,7 +219,6 @@ if selected == "DASHBOARD":
     
     st.markdown('<div class="section-title">BODY ARMOR STATUS</div>', unsafe_allow_html=True)
     
-    # RADAR CHART
     st.markdown('<div class="clean-card">', unsafe_allow_html=True)
     if not df.empty:
         muscle_data = df.groupby('Muscle')['Тоннаж'].sum().reset_index()
@@ -269,7 +244,6 @@ if selected == "DASHBOARD":
     else: st.info("No data yet.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # CALENDAR
     st.markdown('<div class="section-title">MISSION CALENDAR</div>', unsafe_allow_html=True)
     st.markdown('<div class="clean-card">', unsafe_allow_html=True)
     
@@ -314,31 +288,32 @@ if selected == "DASHBOARD":
     st.markdown(h, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # TABLE
+    # TABLE WITH SET COLUMN
     st.markdown('<div class="section-title">COMBAT LOG</div>', unsafe_allow_html=True)
     if not df.empty:
         hdf = df.copy().sort_values(by='День/Дата', ascending=False)
         hdf['День/Дата'] = hdf['День/Дата'].dt.strftime('%d.%m')
-        st.dataframe(hdf[['День/Дата', 'Упражнение', 'Вес (кг)', 'Повт']], use_container_width=True, hide_index=True)
+        # ПОКАЗЫВАЕМ КОЛОНКУ СЕТ
+        st.dataframe(hdf[['День/Дата', 'Сет', 'Упражнение', 'Вес (кг)', 'Повт']], use_container_width=True, hide_index=True)
 
 # --- LOGBOOK ---
 elif selected == "LOGBOOK":
     st.markdown('<div class="section-title">NEW MISSION</div>', unsafe_allow_html=True)
     st.markdown('<div class="clean-card">', unsafe_allow_html=True)
     with st.form("entry_form"):
-        d = st.date_input("Date")
+        d = st.date_input("Дата")
         c1, c2 = st.columns([1,2])
-        with c1: s_grp = st.text_input("Set", "№1")
-        with c2: ex_name = st.text_input("Exercise")
+        with c1: s_grp = st.text_input("Сет", placeholder="№1")
+        with c2: ex_name = st.text_input("Упражнение")
         
         c3, c4, c5 = st.columns(3)
-        with c3: s_num = st.number_input("#", 1, 10, 1)
-        with c4: w_val = st.number_input("Kg", step=2.5)
-        with c5: r_val = st.number_input("Reps", 1, 100, 10)
+        with c3: s_num = st.number_input("Подход", 1, 10, 1)
+        with c4: w_val = st.number_input("Вес", step=2.5)
+        with c5: r_val = st.number_input("Повт", 1, 100, 10)
         
         c6, c7 = st.columns(2)
-        with c6: tech = st.text_input("Plan")
-        with c7: comm = st.text_input("Fact")
+        with c6: tech = st.text_input("Техника")
+        with c7: comm = st.text_input("Мой коммент")
         
         if st.form_submit_button("SAVE"):
             try:
