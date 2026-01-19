@@ -21,7 +21,7 @@ st.set_page_config(
 AVATAR_URL = "https://i.ibb.co.com/TDhQXVTR/unnamed-3.jpg"
 USER_BIRTHDAY = date(1985, 2, 20)
 USER_WEIGHT_CURRENT = 85.0 
-ACCENT_COLOR = "#D4AF37" # Classic Gold
+ACCENT_COLOR = "#D4AF37" # Gold
 
 # --- 3. ЗВАНИЯ ---
 RANK_SYSTEM = [
@@ -54,17 +54,25 @@ def calculate_age(birthdate):
     today = date.today()
     return today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
 
+# УМНОЕ ОПРЕДЕЛЕНИЕ ГРУПП МЫШЦ
 def detect_muscle_group(exercise_name):
     ex = str(exercise_name).lower()
-    if any(x in ex for x in ['жим лежа', 'жим гантелей', 'бабочка', 'chest', 'отжимания', 'брусья', 'груд', 'жим в тренажере']): return "ГРУДЬ"
-    if any(x in ex for x in ['тяга', 'подтягивания', 'спина', 'back', 'row']): return "СПИНА"
-    if any(x in ex for x in ['присед', 'ноги', 'выпады', 'legs', 'squat', 'бег', 'эллипс', 'разминка']): return "НОГИ/КАРДИО"
-    if any(x in ex for x in ['бицепс', 'трицепс', 'молот', 'arms', 'bicep', 'концентрированный']): return "РУКИ"
-    if any(x in ex for x in ['жим стоя', 'плечи', 'махи', 'shouder', 'press', 'разведение']): return "ПЛЕЧИ"
-    if any(x in ex for x in ['пресс', 'планка', 'abs', 'core', 'скручивания']): return "КОР"
-    return "ОБЩЕЕ"
+    # ГРУДЬ
+    if any(x in ex for x in ['жим лежа', 'жим гантелей', 'бабочка', 'chest', 'отжимания', 'брусья', 'груд', 'жим в тренажере', 'кроссовер']): return "ГРУДЬ"
+    # СПИНА
+    if any(x in ex for x in ['тяга', 'подтягивания', 'спина', 'back', 'row', 'становая', 'гиперэкстензия']): return "СПИНА"
+    # НОГИ
+    if any(x in ex for x in ['присед', 'ноги', 'выпады', 'legs', 'squat', 'разгибания', 'сгибания ног', 'икры']): return "НОГИ"
+    # РУКИ (Бицепс + Трицепс)
+    if any(x in ex for x in ['бицепс', 'трицепс', 'молот', 'arms', 'bicep', 'tricep', 'французский', 'концентрированный', 'отжимания узким']): return "РУКИ"
+    # ПЛЕЧИ
+    if any(x in ex for x in ['жим стоя', 'плечи', 'махи', 'shoulder', 'press', 'разведение', 'армейский']): return "ПЛЕЧИ"
+    # ПРЕСС
+    if any(x in ex for x in ['пресс', 'планка', 'abs', 'core', 'скручивания', 'подъем ног']): return "ПРЕСС"
+    
+    return "ДРУГОЕ"
 
-# --- 5. CLEAN LIGHT CSS ---
+# --- 5. CSS ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap');
@@ -126,7 +134,7 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# --- 6. ЗАГРУЗКА ДАННЫХ (SMART REPAIR) ---
+# --- 6. DATA LOADING ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
@@ -138,49 +146,37 @@ try:
     df = pd.DataFrame(raw_data) if raw_data else pd.DataFrame()
     
     if not df.empty:
-        # 1. Чистим названия колонок от пробелов (на всякий случай)
         df.columns = df.columns.str.strip()
-        
-        # 2. Меняем запятые на точки в числах
         for col in ['Вес (кг)', 'Тоннаж']:
             if col in df.columns:
                 df[col] = df[col].astype(str).str.replace(',', '.')
         
-        # 3. Приводим типы
         df['Вес (кг)'] = pd.to_numeric(df['Вес (кг)'], errors='coerce').fillna(0)
         df['Повт'] = pd.to_numeric(df['Повт'], errors='coerce').fillna(0)
         df['Тоннаж'] = pd.to_numeric(df['Тоннаж'], errors='coerce').fillna(0)
         
-        # 4. Обрабатываем колонку "Сет" (если ее нет или она пустая)
-        if 'Сет' not in df.columns:
-            df['Сет'] = "-"
+        if 'Сет' not in df.columns: df['Сет'] = "-"
         df['Сет'] = df['Сет'].astype(str).replace('', '-')
         
-        # 5. Дата
         df['День/Дата'] = pd.to_datetime(df['День/Дата'], errors='coerce')
         df = df.dropna(subset=['День/Дата'])
         
-        # 6. Мышцы
+        # Определяем мышцы для радара
         df['Muscle'] = df['Упражнение'].apply(detect_muscle_group)
-        
 except Exception as e:
     df = pd.DataFrame()
 
-# Stats
 total_xp = len(df)
 rank = get_rank_data(total_xp)
 user_age = calculate_age(USER_BIRTHDAY)
 trained_dates = set(df['День/Дата'].dt.date) if not df.empty else set()
 
-# --- 7. HEADER & SYNC ---
+# --- 7. UI ---
 col_logo, col_sync = st.columns([3, 1])
-with col_logo:
-    st.markdown(f"<div style='font-family:\"Black Ops One\"; font-size:20px; color:#1C1C1E;'>IRON GYM OS</div>", unsafe_allow_html=True)
-with col_sync:
-    if st.button("🔄 SYNC"):
-        st.rerun()
+with col_logo: st.markdown(f"<div style='font-family:\"Black Ops One\"; font-size:20px; color:#1C1C1E;'>IRON GYM OS</div>", unsafe_allow_html=True)
+with col_sync: 
+    if st.button("🔄 SYNC"): st.rerun()
 
-# ПРОФИЛЬ
 st.markdown(f"""
 <div class="clean-card profile-card">
     <div class="avatar-area"><img src="{AVATAR_URL}" class="avatar-img"></div>
@@ -199,7 +195,6 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# --- 8. MENU ---
 selected = option_menu(
     menu_title=None,
     options=["DASHBOARD", "LOGBOOK", "AI COACH"],
@@ -214,27 +209,28 @@ selected = option_menu(
     }
 )
 
-# --- 9. DASHBOARD ---
 if selected == "DASHBOARD":
-    
-    st.markdown('<div class="section-title">BODY ARMOR STATUS</div>', unsafe_allow_html=True)
-    
+    st.markdown('<div class="section-title">BODY ARMOR STATUS (SETS COUNT)</div>', unsafe_allow_html=True)
     st.markdown('<div class="clean-card">', unsafe_allow_html=True)
     if not df.empty:
-        muscle_data = df.groupby('Muscle')['Тоннаж'].sum().reset_index()
-        all_muscles = ["ГРУДЬ", "СПИНА", "НОГИ/КАРДИО", "РУКИ", "ПЛЕЧИ", "КОР"]
-        radar_df = pd.DataFrame({"Muscle": all_muscles})
+        # СЧИТАЕМ КОЛИЧЕСТВО ПОДХОДОВ (count), а не вес
+        muscle_data = df.groupby('Muscle')['Сет'].count().reset_index()
+        muscle_data.columns = ['Muscle', 'Sets']
+        
+        # Строгий порядок как просил
+        target_muscles = ["ГРУДЬ", "СПИНА", "НОГИ", "РУКИ", "ПЛЕЧИ", "ПРЕСС"]
+        radar_df = pd.DataFrame({"Muscle": target_muscles})
         radar_df = radar_df.merge(muscle_data, on="Muscle", how="left").fillna(0)
         
         fig = go.Figure(data=go.Scatterpolar(
-            r=radar_df['Тоннаж'], theta=radar_df['Muscle'], fill='toself',
+            r=radar_df['Sets'], theta=radar_df['Muscle'], fill='toself',
             line=dict(color=ACCENT_COLOR, width=2),
             fillcolor='rgba(212, 175, 55, 0.2)'
         ))
         fig.update_layout(
             polar=dict(
                 radialaxis=dict(visible=True, showticklabels=False, linecolor='#E5E5EA'),
-                angularaxis=dict(linecolor='#E5E5EA', tickfont=dict(color='#8E8E93', size=10)),
+                angularaxis=dict(linecolor='#E5E5EA', tickfont=dict(color='#8E8E93', size=11, weight="bold")),
                 bgcolor='rgba(0,0,0,0)'
             ),
             showlegend=False, height=280, margin=dict(l=30, r=30, t=20, b=20),
@@ -246,7 +242,6 @@ if selected == "DASHBOARD":
 
     st.markdown('<div class="section-title">MISSION CALENDAR</div>', unsafe_allow_html=True)
     st.markdown('<div class="clean-card">', unsafe_allow_html=True)
-    
     if 'c_year' not in st.session_state: st.session_state.c_year = date.today().year
     if 'c_month' not in st.session_state: st.session_state.c_month = date.today().month
 
@@ -267,7 +262,6 @@ if selected == "DASHBOARD":
 
     cal = calendar.monthcalendar(st.session_state.c_year, st.session_state.c_month)
     today = date.today()
-    
     h = '<table class="calendar-table"><thead><tr>'
     for d in ["M","T","W","T","F","S","S"]: h += f'<th class="day-header">{d}</th>'
     h += '</tr></thead><tbody>'
@@ -288,15 +282,12 @@ if selected == "DASHBOARD":
     st.markdown(h, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # TABLE WITH SET COLUMN
     st.markdown('<div class="section-title">COMBAT LOG</div>', unsafe_allow_html=True)
     if not df.empty:
         hdf = df.copy().sort_values(by='День/Дата', ascending=False)
         hdf['День/Дата'] = hdf['День/Дата'].dt.strftime('%d.%m')
-        # ПОКАЗЫВАЕМ КОЛОНКУ СЕТ
         st.dataframe(hdf[['День/Дата', 'Сет', 'Упражнение', 'Вес (кг)', 'Повт']], use_container_width=True, hide_index=True)
 
-# --- LOGBOOK ---
 elif selected == "LOGBOOK":
     st.markdown('<div class="section-title">NEW MISSION</div>', unsafe_allow_html=True)
     st.markdown('<div class="clean-card">', unsafe_allow_html=True)
@@ -305,16 +296,13 @@ elif selected == "LOGBOOK":
         c1, c2 = st.columns([1,2])
         with c1: s_grp = st.text_input("Сет", placeholder="№1")
         with c2: ex_name = st.text_input("Упражнение")
-        
         c3, c4, c5 = st.columns(3)
         with c3: s_num = st.number_input("Подход", 1, 10, 1)
         with c4: w_val = st.number_input("Вес", step=2.5)
         with c5: r_val = st.number_input("Повт", 1, 100, 10)
-        
         c6, c7 = st.columns(2)
         with c6: tech = st.text_input("Техника")
         with c7: comm = st.text_input("Мой коммент")
-        
         if st.form_submit_button("SAVE"):
             try:
                 sheet.append_row([d.strftime("%Y-%m-%d"), s_grp, ex_name, s_num, w_val, r_val, w_val*r_val, tech, comm])
@@ -323,7 +311,6 @@ elif selected == "LOGBOOK":
             except: st.error("ERROR")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --- COACH ---
 elif selected == "AI COACH":
     st.markdown(f'<div class="section-title">INSTRUCTOR // {rank["abbr"]}</div>', unsafe_allow_html=True)
     st.markdown('<div class="clean-card">', unsafe_allow_html=True)
