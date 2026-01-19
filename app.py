@@ -24,70 +24,96 @@ st.set_page_config(
 )
 
 # --- 2. CAMO THEME ---
-CAMO_DARK = "#0e0e0e"
+CAMO_BG = "#0e0e0e"
 CAMO_PANEL = "#1c1f1a"
 CAMO_GREEN = "#4b5320"
 ACCENT_GOLD = "#FFD700"
+ACCENT_SILVER = "#C0C0C0"
 TEXT_COLOR = "#B0B0B0"
+ALERT_RED = "#8B0000"
 
 AVATAR_URL = "https://i.ibb.co.com/TDhQXVTR/unnamed-3.jpg"
 USER_BIRTHDAY = date(1985, 2, 20)
 USER_WEIGHT_CURRENT = 85.0 
 
-# --- 3. НАСТОЯЩИЕ ШЕВРОНЫ (URL) ---
-# Мы используем официальные SVG с Wikimedia. Они никогда не пропадут и выглядят идеально.
-RANK_IMGS = {
-    "PV1": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Army-USA-OR-01.svg/100px-Army-USA-OR-01.svg.png", # Пусто или лого
-    "PV2": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Army-USA-OR-02.svg/100px-Army-USA-OR-02.svg.png",
-    "PFC": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/ec/Army-USA-OR-03.svg/100px-Army-USA-OR-03.svg.png",
-    "SPC": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/Army-USA-OR-04b.svg/100px-Army-USA-OR-04b.svg.png",
-    "CPL": "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Army-USA-OR-04a.svg/100px-Army-USA-OR-04a.svg.png",
-    "SGT": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Army-USA-OR-05.svg/100px-Army-USA-OR-05.svg.png",
-    "SSG": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/75/Army-USA-OR-06.svg/100px-Army-USA-OR-06.svg.png",
-    "SFC": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Army-USA-OR-07.svg/100px-Army-USA-OR-07.svg.png",
-    "MSG": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Army-USA-OR-08b.svg/100px-Army-USA-OR-08b.svg.png",
-    "1SG": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Army-USA-OR-08a.svg/100px-Army-USA-OR-08a.svg.png",
-    "SGM": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Army-USA-OR-09c.svg/100px-Army-USA-OR-09c.svg.png",
+# --- 3. ГЕНЕРАТОР ШЕВРОНОВ (ВЕКТОРНЫЙ КОД - НИКОГДА НЕ ПРОПАДЕТ) ---
+def get_rank_svg(rank_type, grade):
+    color = ACCENT_GOLD
+    # Офицеры: 2LT(0)=Gold, 1LT(1)=Silver, CPT(2)=Silver, MAJ(3)=Gold, LTC(4)+=Silver
+    if rank_type == "OFFICER":
+        if grade == 0 or grade == 3: color = ACCENT_GOLD
+        else: color = ACCENT_SILVER
     
-    # OFFICERS (Золото и Серебро соблюдены)
-    "2LT": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Army-USA-OF-01.svg/50px-Army-USA-OF-01.svg.png", # Gold Bar
-    "1LT": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Army-USA-OF-02.svg/50px-Army-USA-OF-02.svg.png", # Silver Bar
-    "CPT": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Army-USA-OF-03.svg/50px-Army-USA-OF-03.svg.png", # 2 Bars
-    "MAJ": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Army-USA-OF-04.svg/50px-Army-USA-OF-04.svg.png", # Gold Oak
-    "LTC": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Army-USA-OF-05.svg/50px-Army-USA-OF-05.svg.png", # Silver Oak
-    "COL": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Army-USA-OF-06.svg/100px-Army-USA-OF-06.svg.png", # Eagle
+    svg = f'<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 100 100" fill="none" stroke="{color}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">'
     
-    # GENERALS
-    "BG": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Army-USA-OF-07.svg/100px-Army-USA-OF-07.svg.png",
-    "MG": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Army-USA-OF-08.svg/100px-Army-USA-OF-08.svg.png",
-    "LTG": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Army-USA-OF-09.svg/100px-Army-USA-OF-09.svg.png",
-    "GEN": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/Army-USA-OF-10.svg/100px-Army-USA-OF-10.svg.png",
-    "GA": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Army-USA-OF-11.svg/100px-Army-USA-OF-11.svg.png"
-}
+    if rank_type == "ENLISTED":
+        # Логика: grade 0-2 (Soldiers), 3-4 (NCO Jr), 5+ (NCO Sr)
+        chevrons = 0
+        rockers = 0
+        
+        if grade == 0: pass # PV1 (Empty or Logo)
+        elif grade == 1: chevrons = 1 # PV2
+        elif grade == 2: chevrons = 1; rockers = 1 # PFC (Arc style usually, simplified here)
+        elif grade == 3: # SPC (Shield style simplified)
+             svg += f'<path d="M20,20 L80,20 L80,60 L50,90 L20,60 Z" stroke="{color}" fill="none"/>'
+             chevrons = 0
+        elif grade == 4: chevrons = 3 # SGT
+        elif grade == 5: chevrons = 3; rockers = 1 # SSG
+        elif grade == 6: chevrons = 3; rockers = 2 # SFC
+        elif grade >= 7: chevrons = 3; rockers = 3 # MSG/SGM
+        
+        # Рисуем Галочки (Chevrons)
+        for i in range(chevrons):
+            y = 30 + (i * 12)
+            svg += f'<path d="M15,{y} L50,{y-20} L85,{y}" />'
+            
+        # Рисуем Дуги (Rockers)
+        for i in range(rockers):
+            y = 60 + (i * 10)
+            svg += f'<path d="M15,{y-5} Q50,{y+15} 85,{y-5}" />'
+            
+    elif rank_type == "OFFICER":
+        if grade <= 1: # Bars (LT)
+            svg += f'<rect x="40" y="20" width="20" height="60" fill="{color}" stroke="none"/>'
+        elif grade == 2: # Bars (CPT)
+            svg += f'<rect x="25" y="20" width="15" height="60" fill="{color}" stroke="none"/> <rect x="60" y="20" width="15" height="60" fill="{color}" stroke="none"/>'
+        elif grade == 3 or grade == 4: # Leaves (MAJ/LTC)
+            svg += f'<path d="M50,15 Q80,15 80,45 Q80,75 50,90 Q20,75 20,45 Q20,15 50,15 Z" fill="{color}" stroke="none"/>'
+        elif grade == 5: # Eagle (COL)
+            svg += f'<path d="M10,40 L50,20 L90,40 L80,70 L50,90 L20,70 Z" fill="{color}" stroke="none"/>'
+        elif grade >= 6: # Stars (Generals)
+            stars = grade - 5
+            # Рисуем звезды в ряд
+            start_x = 50 - ((stars-1)*10)
+            for i in range(stars):
+                cx = start_x + (i*20)
+                svg += f'<circle cx="{cx}" cy="50" r="8" fill="{color}" stroke="none"/>'
+
+    svg += '</svg>'
+    b64 = base64.b64encode(svg.encode('utf-8')).decode("utf-8")
+    return f"data:image/svg+xml;base64,{b64}"
 
 FULL_RANK_SYSTEM = [
-    (0, 24, "РЕКРУТ", "PV1"), (25, 49, "РЯДОВОЙ", "PV2"),
-    (50, 99, "РЯДОВОЙ 1 КЛ", "PFC"), (100, 149, "СПЕЦИАЛИСТ", "SPC"),
-    (150, 199, "КАПРАЛ", "CPL"), (200, 299, "СЕРЖАНТ", "SGT"),
-    (300, 399, "ШТАБ-СЕРЖАНТ", "SSG"), (400, 499, "СЕРЖАНТ 1 КЛ", "SFC"),
-    (500, 649, "МАСТЕР-СЕРЖАНТ", "MSG"), (650, 799, "1-Й СЕРЖАНТ", "1SG"),
-    (800, 999, "СЕРЖАНТ-МАЙОР", "SGM"), (1000, 1499, "2-Й ЛЕЙТЕНАНТ", "2LT"),
-    (1500, 1999, "1-Й ЛЕЙТЕНАНТ", "1LT"), (2000, 2999, "КАПИТАН", "CPT"),
-    (3000, 3999, "МАЙОР", "MAJ"), (4000, 4999, "ПОДПОЛКОВНИК", "LTC"),
-    (5000, 5999, "ПОЛКОВНИК", "COL"), (6000, 7999, "БРИГАДНЫЙ ГЕНЕРАЛ", "BG"),
-    (8000, 9999, "ГЕНЕРАЛ-МАЙОР", "MG"), (10000, 14999, "ГЕНЕРАЛ-ЛЕЙТЕНАНТ", "LTG"),
-    (15000, 24999, "ГЕНЕРАЛ", "GEN"), (25000, 999999, "ГЕНЕРАЛ АРМИИ", "GA")
+    (0, 24, "РЕКРУТ", "PV1", "ENLISTED", 0), (25, 49, "РЯДОВОЙ", "PV2", "ENLISTED", 1),
+    (50, 99, "РЯДОВОЙ 1 КЛ", "PFC", "ENLISTED", 2), (100, 149, "СПЕЦИАЛИСТ", "SPC", "ENLISTED", 3),
+    (150, 199, "КАПРАЛ", "CPL", "ENLISTED", 3), (200, 299, "СЕРЖАНТ", "SGT", "ENLISTED", 4),
+    (300, 399, "ШТАБ-СЕРЖАНТ", "SSG", "ENLISTED", 5), (400, 499, "СЕРЖАНТ 1 КЛ", "SFC", "ENLISTED", 6),
+    (500, 649, "МАСТЕР-СЕРЖАНТ", "MSG", "ENLISTED", 7), (650, 799, "1-Й СЕРЖАНТ", "1SG", "ENLISTED", 7),
+    (800, 999, "СЕРЖАНТ-МАЙОР", "SGM", "ENLISTED", 8), (1000, 1499, "2-Й ЛЕЙТЕНАНТ", "2LT", "OFFICER", 0),
+    (1500, 1999, "1-Й ЛЕЙТЕНАНТ", "1LT", "OFFICER", 1), (2000, 2999, "КАПИТАН", "CPT", "OFFICER", 2),
+    (3000, 3999, "МАЙОР", "MAJ", "OFFICER", 3), (4000, 4999, "ПОДПОЛКОВНИК", "LTC", "OFFICER", 4),
+    (5000, 5999, "ПОЛКОВНИК", "COL", "OFFICER", 5), (6000, 7999, "БРИГАДНЫЙ ГЕНЕРАЛ", "BG", "OFFICER", 6),
+    (8000, 9999, "ГЕНЕРАЛ-МАЙОР", "MG", "OFFICER", 7), (10000, 14999, "ГЕНЕРАЛ-ЛЕЙТЕНАНТ", "LTG", "OFFICER", 8),
+    (15000, 24999, "ГЕНЕРАЛ", "GEN", "OFFICER", 9), (25000, 999999, "ГЕНЕРАЛ АРМИИ", "GA", "OFFICER", 10)
 ]
 
 def get_rank_data(xp):
-    for r_min, r_max, title, abbr in FULL_RANK_SYSTEM:
+    for r_min, r_max, title, abbr, r_type, grade in FULL_RANK_SYSTEM:
         if r_min <= xp <= r_max:
             needed = r_max - r_min + 1
             current = xp - r_min
-            # Получаем картинку из словаря, если нет - заглушка
-            img = RANK_IMGS.get(abbr, "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Army-USA-OR-01.svg/100px-Army-USA-OR-01.svg.png")
-            return {"title": title, "abbr": abbr, "icon": img, "progress": int((current/needed)*100), "next_xp": needed-current}
-    return {"title": "ГЕНЕРАЛ АРМИИ", "abbr": "GA", "icon": RANK_IMGS["GA"], "progress": 100, "next_xp": 0}
+            return {"title": title, "abbr": abbr, "icon": get_rank_svg(r_type, grade), "progress": int((current/needed)*100), "next_xp": needed-current}
+    return {"title": "ГЕНЕРАЛ АРМИИ", "abbr": "GA", "icon": get_rank_svg("OFFICER", 10), "progress": 100, "next_xp": 0}
 
 def calculate_age(birthdate):
     today = date.today()
@@ -103,13 +129,13 @@ def detect_muscle(ex):
     if any(x in ex for x in ['пресс', 'abs', 'core', 'планка']): return "ПРЕСС"
     return "ОБЩЕЕ"
 
-# --- 4. CSS ---
+# --- 4. CSS (TACTICAL) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap');
     
-    .stApp {{ background-color: {CAMO_DARK}; color: {TEXT_COLOR}; font-family: 'Roboto Mono', monospace; }}
+    .stApp {{ background-color: {CAMO_BG}; color: {TEXT_COLOR}; font-family: 'Roboto Mono', monospace; }}
     h1, h2, h3, .tac-font {{ font-family: 'Oswald', sans-serif !important; letter-spacing: 1px; text-transform: uppercase; }}
     
     .camo-card {{
@@ -123,13 +149,14 @@ st.markdown(f"""
     .stat-badge {{ background: #111; color: {ACCENT_GOLD}; padding: 3px 8px; border: 1px solid {CAMO_GREEN}; font-size: 11px; margin-right: 5px; font-family: 'Oswald'; }}
     .tac-header {{ font-family: 'Oswald', sans-serif; font-size: 18px; color: {TEXT_COLOR}; border-bottom: 2px solid {CAMO_GREEN}; padding-bottom: 5px; margin: 20px 0 10px 0; }}
     
-    /* КАЛЕНДАРЬ СТИЛИ */
+    /* СТИЛИЗАЦИЯ ПЛАГИНА КАЛЕНДАРЯ */
     .fc-theme-standard {{ background-color: {CAMO_PANEL} !important; font-family: 'Oswald' !important; }}
     .fc-col-header-cell {{ background-color: #111 !important; color: #777 !important; border-bottom: 1px solid #333 !important; }}
     .fc-daygrid-day {{ border: 1px solid #2a2a2a !important; }}
     .fc-day-today {{ background-color: rgba(255, 215, 0, 0.05) !important; border: 1px solid {ACCENT_GOLD} !important; }}
     .fc-button-primary {{ background-color: {CAMO_GREEN} !important; border: none !important; color: white !important; font-family: 'Oswald' !important; }}
     .fc-toolbar-title {{ color: {ACCENT_GOLD} !important; font-size: 1.2em !important; }}
+    .fc-event {{ border: none !important; cursor: pointer; }}
     
     input, textarea, select {{ background: #111 !important; color: {ACCENT_GOLD} !important; border: 1px solid #444 !important; font-family: 'Roboto Mono' !important; }}
     .streamlit-expanderHeader {{ background: {CAMO_PANEL} !important; color: {ACCENT_GOLD} !important; font-family: 'Oswald' !important; }}
@@ -137,7 +164,7 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# --- 5. DATA LOADING ---
+# --- 5. ЗАГРУЗКА ДАННЫХ (БЕЗОПАСНАЯ) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
@@ -150,28 +177,39 @@ try:
         df = pd.DataFrame(raw_data)
         df.columns = df.columns.str.strip()
         
-        # Smart Date Find
+        # УМНЫЙ ПОИСК КОЛОНКИ С ДАТОЙ
+        # Ищем любую колонку, содержащую "дат", "date" или "день"
         date_col = next((c for c in df.columns if "дат" in c.lower() or "date" in c.lower() or "день" in c.lower()), None)
+        
         if date_col:
             df.rename(columns={date_col: 'Date'}, inplace=True)
             df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
             df = df.dropna(subset=['Date'])
-        
+        else:
+            # Если не нашли, создаем пустую, чтобы не падало
+            st.warning("⚠️ Не найдена колонка с Датой. Проверьте заголовки в таблице.")
+            df['Date'] = pd.to_datetime([])
+
+        # Безопасная обработка чисел
         if 'Вес (кг)' in df.columns: 
             df['Вес (кг)'] = df['Вес (кг)'].astype(str).str.replace(',', '.')
             df['Вес (кг)'] = pd.to_numeric(df['Вес (кг)'], errors='coerce').fillna(0)
         
         if 'Сет' not in df.columns: df['Сет'] = "-"
         if 'Упражнение' not in df.columns: df['Упражнение'] = "Unknown"
+        
         df['Muscle'] = df['Упражнение'].apply(detect_muscle)
-    else: df = pd.DataFrame()
-except: df = pd.DataFrame()
+    else:
+        df = pd.DataFrame()
+except Exception as e:
+    # st.error(f"Ошибка БД: {e}") 
+    df = pd.DataFrame()
 
 total_xp = len(df)
 rank = get_rank_data(total_xp)
 user_age = (date.today() - USER_BIRTHDAY).days // 365
 
-# --- 6. UI ---
+# --- 6. ИНТЕРФЕЙС ---
 st.markdown(f"""
 <div class="camo-card" style="display:flex; align-items:center;">
     <div class="avatar-area"><img src="{AVATAR_URL}" class="avatar-img"></div>
@@ -188,13 +226,11 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 with st.expander(f"{rank['title']} // {rank['abbr']} (СПИСОК)"):
-    for r_min, r_max, title, abbr in FULL_RANK_SYSTEM:
+    for r_min, r_max, title, abbr, r_type, grade in FULL_RANK_SYSTEM:
         bg = "background:rgba(255,215,0,0.1); border-left:2px solid #FFD700;" if title == rank['title'] else ""
         col = ACCENT_GOLD if title == rank['title'] else "#777"
-        # Получаем реальную картинку
-        img_url = RANK_IMGS.get(abbr, RANK_IMGS["PV1"])
         st.markdown(f"""<div style="display:flex; align-items:center; padding:8px; border-bottom:1px solid #333; {bg}">
-            <img src="{img_url}" style="height:35px; width:auto; margin-right:15px; object-fit:contain;">
+            <img src="{get_rank_svg(r_type, grade)}" style="height:25px; margin-right:10px;">
             <div style="flex-grow:1; color:{col}; font-family:'Oswald';">{title}</div>
             <div style="font-family:'Roboto Mono'; font-size:10px; color:#555;">{r_min}</div>
         </div>""", unsafe_allow_html=True)
@@ -203,8 +239,11 @@ selected = option_menu(None, ["ДАШБОРД", "ЖУРНАЛ", "ТРЕНЕР"],
     orientation="horizontal", styles={"container": {"padding": "0!important", "background": "transparent"}, "nav-link": {"font-family": "Oswald", "color": "#777"}, "nav-link-selected": {"background": CAMO_GREEN, "color": "white"}})
 
 if selected == "ДАШБОРД":
+    # 1. RADAR
     st.markdown('<div class="tac-header">СТАТУС БРОНИ</div>', unsafe_allow_html=True)
     st.markdown('<div class="camo-card">', unsafe_allow_html=True)
+    
+    # State for calendar click
     if 'cal_date' not in st.session_state: st.session_state.cal_date = None
     
     f_df = df.copy()
@@ -226,9 +265,10 @@ if selected == "ДАШБОРД":
     else: st.info("Нет данных")
     st.markdown('</div>', unsafe_allow_html=True)
 
+    # 2. CALENDAR (PLUGIN)
     st.markdown('<div class="tac-header">КАЛЕНДАРЬ МИССИЙ</div>', unsafe_allow_html=True)
     events = []
-    if not df.empty:
+    if not df.empty and 'Date' in df.columns:
         for d in df['Date'].dt.date.unique():
             events.append({"title": "✅", "start": str(d), "backgroundColor": CAMO_GREEN, "borderColor": ACCENT_GOLD, "display": "background"})
     
@@ -240,6 +280,7 @@ if selected == "ДАШБОРД":
             st.session_state.cal_date = clicked
             st.rerun()
 
+    # 3. TABLE
     st.markdown('<div class="tac-header">ЖУРНАЛ</div>', unsafe_allow_html=True)
     if not f_df.empty:
         show = f_df.sort_values(by=['Date', 'Сет'], ascending=[False, True]).copy()
