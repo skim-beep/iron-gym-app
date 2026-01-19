@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
 import plotly.graph_objects as go
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -8,11 +8,12 @@ import json
 from streamlit_option_menu import option_menu
 import base64
 
-# ПОПЫТКА ИМПОРТА КАЛЕНДАРЯ
+# --- ПОДКЛЮЧЕНИЕ КАЛЕНДАРЯ ---
 try:
     from streamlit_calendar import calendar
 except ImportError:
-    st.error("⚠️ ПЛАГИН НЕ УСТАНОВЛЕН. Введите в терминал: pip3 install streamlit-calendar")
+    st.error("⚠️ ОШИБКА: Плагин календаря не найден.")
+    st.info("Откройте терминал и введите команду: pip install streamlit-calendar")
     st.stop()
 
 # --- 1. НАСТРОЙКИ ---
@@ -23,88 +24,119 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. CAMO THEME ---
+# --- 2. ТЕМА (DARK CAMO) ---
 CAMO_BG = "#0e0e0e"
 CAMO_PANEL = "#1c1f1a"
 CAMO_GREEN = "#4b5320"
-ACCENT_GOLD = "#FFD700"
-ACCENT_SILVER = "#C0C0C0"
+ACCENT_GOLD = "#FFD700"     # Золото (2LT, MAJ)
+ACCENT_SILVER = "#E0E0E0"   # Серебро (Остальные офицеры)
 TEXT_COLOR = "#B0B0B0"
-ALERT_RED = "#8B0000"
 
 AVATAR_URL = "https://i.ibb.co.com/TDhQXVTR/unnamed-3.jpg"
 USER_BIRTHDAY = date(1985, 2, 20)
 USER_WEIGHT_CURRENT = 85.0 
 
-# --- 3. ГЕНЕРАТОР ШЕВРОНОВ (ВЕКТОРНЫЙ КОД - НИКОГДА НЕ ПРОПАДЕТ) ---
+# --- 3. ГЕНЕРАТОР ЗНАКОВ РАЗЛИЧИЯ (SVG REALISM) ---
 def get_rank_svg(rank_type, grade):
+    # Логика цветов по уставу
     color = ACCENT_GOLD
-    # Офицеры: 2LT(0)=Gold, 1LT(1)=Silver, CPT(2)=Silver, MAJ(3)=Gold, LTC(4)+=Silver
     if rank_type == "OFFICER":
-        if grade == 0 or grade == 3: color = ACCENT_GOLD
-        else: color = ACCENT_SILVER
+        # 0=2LT(Gold), 1=1LT(Silver), 2=CPT(Silver), 3=MAJ(Gold), 4+=Silver
+        if grade in [1, 2, 4, 5] or grade >= 6: 
+            color = ACCENT_SILVER
     
+    # Холст 40x40
     svg = f'<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 100 100" fill="none" stroke="{color}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">'
     
     if rank_type == "ENLISTED":
-        # Логика: grade 0-2 (Soldiers), 3-4 (NCO Jr), 5+ (NCO Sr)
+        # Логика полосок и дуг
         chevrons = 0
         rockers = 0
         
-        if grade == 0: pass # PV1 (Empty or Logo)
-        elif grade == 1: chevrons = 1 # PV2
-        elif grade == 2: chevrons = 1; rockers = 1 # PFC (Arc style usually, simplified here)
-        elif grade == 3: # SPC (Shield style simplified)
-             svg += f'<path d="M20,20 L80,20 L80,60 L50,90 L20,60 Z" stroke="{color}" fill="none"/>'
-             chevrons = 0
+        if grade == 1: chevrons = 1 # PV2
+        elif grade == 2: chevrons = 1; rockers = 1 # PFC
+        elif grade == 3: # SPC (Shield)
+             svg += f'<path d="M20,20 L80,20 L80,60 L50,90 L20,60 Z" fill="{CAMO_GREEN}" stroke="{color}" stroke-width="4"/>'
+             svg += f'<path d="M50,15 L80,30 L80,50 L50,80 L20,50 L20,30 Z" fill="{color}" stroke="none"/>'
+             chevrons = -1 # Skip loops
         elif grade == 4: chevrons = 3 # SGT
         elif grade == 5: chevrons = 3; rockers = 1 # SSG
         elif grade == 6: chevrons = 3; rockers = 2 # SFC
-        elif grade >= 7: chevrons = 3; rockers = 3 # MSG/SGM
+        elif grade >= 7: chevrons = 3; rockers = 3 # MSG/SGM/CSM
         
-        # Рисуем Галочки (Chevrons)
-        for i in range(chevrons):
-            y = 30 + (i * 12)
-            svg += f'<path d="M15,{y} L50,{y-20} L85,{y}" />'
-            
-        # Рисуем Дуги (Rockers)
-        for i in range(rockers):
-            y = 60 + (i * 10)
-            svg += f'<path d="M15,{y-5} Q50,{y+15} 85,{y-5}" />'
+        if chevrons >= 0:
+            for i in range(chevrons):
+                y = 35 + (i * 12)
+                svg += f'<path d="M15,{y} L50,{y-20} L85,{y}" />'
+            for i in range(rockers):
+                y = 65 + (i * 10)
+                svg += f'<path d="M15,{y-5} Q50,{y+15} 85,{y-5}" />'
             
     elif rank_type == "OFFICER":
-        if grade <= 1: # Bars (LT)
+        # ПЛАНКИ (BARS)
+        if grade == 0 or grade == 1: # 2LT / 1LT
             svg += f'<rect x="40" y="20" width="20" height="60" fill="{color}" stroke="none"/>'
-        elif grade == 2: # Bars (CPT)
-            svg += f'<rect x="25" y="20" width="15" height="60" fill="{color}" stroke="none"/> <rect x="60" y="20" width="15" height="60" fill="{color}" stroke="none"/>'
-        elif grade == 3 or grade == 4: # Leaves (MAJ/LTC)
-            svg += f'<path d="M50,15 Q80,15 80,45 Q80,75 50,90 Q20,75 20,45 Q20,15 50,15 Z" fill="{color}" stroke="none"/>'
-        elif grade == 5: # Eagle (COL)
-            svg += f'<path d="M10,40 L50,20 L90,40 L80,70 L50,90 L20,70 Z" fill="{color}" stroke="none"/>'
-        elif grade >= 6: # Stars (Generals)
-            stars = grade - 5
-            # Рисуем звезды в ряд
-            start_x = 50 - ((stars-1)*10)
-            for i in range(stars):
-                cx = start_x + (i*20)
-                svg += f'<circle cx="{cx}" cy="50" r="8" fill="{color}" stroke="none"/>'
+        elif grade == 2: # CPT (2 Bars)
+            svg += f'<rect x="25" y="20" width="15" height="60" fill="{color}" stroke="none"/>'
+            svg += f'<rect x="60" y="20" width="15" height="60" fill="{color}" stroke="none"/>'
+        
+        # ДУБОВЫЕ ЛИСТЬЯ (OAK LEAF) - MAJ / LTC
+        elif grade == 3 or grade == 4:
+            svg += f'<path d="M50,10 Q80,10 80,40 Q80,70 50,90 Q20,70 20,40 Q20,10 50,10 Z" fill="{color}" stroke="none"/>'
+            svg += f'<line x1="50" y1="10" x2="50" y2="90" stroke="#111" stroke-width="2"/>'
+            
+        # ОРЕЛ (EAGLE) - COL
+        elif grade == 5:
+            svg += f'<path d="M10,30 L40,40 L50,20 L60,40 L90,30 L80,60 L50,80 L20,60 Z" fill="{color}" stroke="none"/>'
+
+        # ЗВЕЗДЫ (STARS) - GENERALS
+        elif grade >= 6: 
+            stars_count = grade - 5
+            # Рисуем 5-конечные звезды
+            def draw_star(cx, cy):
+                # Координаты звезды
+                return f'<polygon points="{cx},{cy-10} {cx+2},{cy-3} {cx+10},{cy-3} {cx+4},{cy+2} {cx+6},{cy+10} {cx},{cy+5} {cx-6},{cy+10} {cx-4},{cy+2} {cx-10},{cy-3} {cx-2},{cy-3}" fill="{color}" stroke="none"/>'
+
+            if stars_count == 5: # GA (Pentagon)
+                coords = [(50,20), (20,42), (80,42), (30,75), (70,75)]
+                for cx, cy in coords: svg += draw_star(cx, cy)
+            else: # Line
+                start_x = 50 - ((stars_count-1)*12)
+                for i in range(stars_count):
+                    svg += draw_star(start_x + (i*25), 50)
 
     svg += '</svg>'
     b64 = base64.b64encode(svg.encode('utf-8')).decode("utf-8")
     return f"data:image/svg+xml;base64,{b64}"
 
+# --- ПОЛНЫЙ СПИСОК ЗВАНИЙ (XP, Title, Abbr, Type, Grade) ---
 FULL_RANK_SYSTEM = [
-    (0, 24, "РЕКРУТ", "PV1", "ENLISTED", 0), (25, 49, "РЯДОВОЙ", "PV2", "ENLISTED", 1),
-    (50, 99, "РЯДОВОЙ 1 КЛ", "PFC", "ENLISTED", 2), (100, 149, "СПЕЦИАЛИСТ", "SPC", "ENLISTED", 3),
-    (150, 199, "КАПРАЛ", "CPL", "ENLISTED", 3), (200, 299, "СЕРЖАНТ", "SGT", "ENLISTED", 4),
-    (300, 399, "ШТАБ-СЕРЖАНТ", "SSG", "ENLISTED", 5), (400, 499, "СЕРЖАНТ 1 КЛ", "SFC", "ENLISTED", 6),
-    (500, 649, "МАСТЕР-СЕРЖАНТ", "MSG", "ENLISTED", 7), (650, 799, "1-Й СЕРЖАНТ", "1SG", "ENLISTED", 7),
-    (800, 999, "СЕРЖАНТ-МАЙОР", "SGM", "ENLISTED", 8), (1000, 1499, "2-Й ЛЕЙТЕНАНТ", "2LT", "OFFICER", 0),
-    (1500, 1999, "1-Й ЛЕЙТЕНАНТ", "1LT", "OFFICER", 1), (2000, 2999, "КАПИТАН", "CPT", "OFFICER", 2),
-    (3000, 3999, "МАЙОР", "MAJ", "OFFICER", 3), (4000, 4999, "ПОДПОЛКОВНИК", "LTC", "OFFICER", 4),
-    (5000, 5999, "ПОЛКОВНИК", "COL", "OFFICER", 5), (6000, 7999, "БРИГАДНЫЙ ГЕНЕРАЛ", "BG", "OFFICER", 6),
-    (8000, 9999, "ГЕНЕРАЛ-МАЙОР", "MG", "OFFICER", 7), (10000, 14999, "ГЕНЕРАЛ-ЛЕЙТЕНАНТ", "LTG", "OFFICER", 8),
-    (15000, 24999, "ГЕНЕРАЛ", "GEN", "OFFICER", 9), (25000, 999999, "ГЕНЕРАЛ АРМИИ", "GA", "OFFICER", 10)
+    # Солдатский состав
+    (0, 24, "РЕКРУТ", "PV1", "ENLISTED", 0),
+    (25, 49, "РЯДОВОЙ", "PV2", "ENLISTED", 1),
+    (50, 99, "РЯДОВОЙ 1 КЛ", "PFC", "ENLISTED", 2),
+    (100, 149, "СПЕЦИАЛИСТ", "SPC", "ENLISTED", 3),
+    (150, 199, "КАПРАЛ", "CPL", "ENLISTED", 3),
+    # Сержанты
+    (200, 299, "СЕРЖАНТ", "SGT", "ENLISTED", 4),
+    (300, 399, "ШТАБ-СЕРЖАНТ", "SSG", "ENLISTED", 5),
+    (400, 499, "СЕРЖАНТ 1 КЛ", "SFC", "ENLISTED", 6),
+    (500, 649, "МАСТЕР-СЕРЖАНТ", "MSG", "ENLISTED", 7),
+    (650, 799, "1-Й СЕРЖАНТ", "1SG", "ENLISTED", 7),
+    (800, 999, "СЕРЖАНТ-МАЙОР", "SGM", "ENLISTED", 8),
+    # Офицеры
+    (1000, 1499, "2-Й ЛЕЙТЕНАНТ", "2LT", "OFFICER", 0),  # GOLD
+    (1500, 1999, "1-Й ЛЕЙТЕНАНТ", "1LT", "OFFICER", 1),  # SILVER
+    (2000, 2999, "КАПИТАН", "CPT", "OFFICER", 2),        # SILVER
+    (3000, 3999, "МАЙОР", "MAJ", "OFFICER", 3),          # GOLD OAK
+    (4000, 4999, "ПОДПОЛКОВНИК", "LTC", "OFFICER", 4),   # SILVER OAK
+    (5000, 5999, "ПОЛКОВНИК", "COL", "OFFICER", 5),      # EAGLE
+    # Генералы
+    (6000, 7999, "БРИГАДНЫЙ ГЕНЕРАЛ", "BG", "OFFICER", 6),   # 1 STAR
+    (8000, 9999, "ГЕНЕРАЛ-МАЙОР", "MG", "OFFICER", 7),       # 2 STARS
+    (10000, 14999, "ГЕНЕРАЛ-ЛЕЙТЕНАНТ", "LTG", "OFFICER", 8), # 3 STARS
+    (15000, 24999, "ГЕНЕРАЛ", "GEN", "OFFICER", 9),          # 4 STARS
+    (25000, 999999, "ГЕНЕРАЛ АРМИИ", "GA", "OFFICER", 10)    # 5 STARS
 ]
 
 def get_rank_data(xp):
@@ -114,10 +146,6 @@ def get_rank_data(xp):
             current = xp - r_min
             return {"title": title, "abbr": abbr, "icon": get_rank_svg(r_type, grade), "progress": int((current/needed)*100), "next_xp": needed-current}
     return {"title": "ГЕНЕРАЛ АРМИИ", "abbr": "GA", "icon": get_rank_svg("OFFICER", 10), "progress": 100, "next_xp": 0}
-
-def calculate_age(birthdate):
-    today = date.today()
-    return today.year - birthdate.year - ((today.month, today.day) < (birthdate.month, birthdate.day))
 
 def detect_muscle(ex):
     ex = str(ex).lower()
@@ -129,13 +157,15 @@ def detect_muscle(ex):
     if any(x in ex for x in ['пресс', 'abs', 'core', 'планка']): return "ПРЕСС"
     return "ОБЩЕЕ"
 
-# --- 4. CSS (TACTICAL) ---
+# --- 4. CSS (TACTICAL FONT & STYLE) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;500&display=swap');
     
     .stApp {{ background-color: {CAMO_BG}; color: {TEXT_COLOR}; font-family: 'Roboto Mono', monospace; }}
+    #MainMenu, footer, header {{ visibility: hidden; }}
+
     h1, h2, h3, .tac-font {{ font-family: 'Oswald', sans-serif !important; letter-spacing: 1px; text-transform: uppercase; }}
     
     .camo-card {{
@@ -149,14 +179,14 @@ st.markdown(f"""
     .stat-badge {{ background: #111; color: {ACCENT_GOLD}; padding: 3px 8px; border: 1px solid {CAMO_GREEN}; font-size: 11px; margin-right: 5px; font-family: 'Oswald'; }}
     .tac-header {{ font-family: 'Oswald', sans-serif; font-size: 18px; color: {TEXT_COLOR}; border-bottom: 2px solid {CAMO_GREEN}; padding-bottom: 5px; margin: 20px 0 10px 0; }}
     
-    /* СТИЛИЗАЦИЯ ПЛАГИНА КАЛЕНДАРЯ */
+    /* КАЛЕНДАРЬ СТИЛИ (ПЛАГИН) */
     .fc-theme-standard {{ background-color: {CAMO_PANEL} !important; font-family: 'Oswald' !important; }}
     .fc-col-header-cell {{ background-color: #111 !important; color: #777 !important; border-bottom: 1px solid #333 !important; }}
     .fc-daygrid-day {{ border: 1px solid #2a2a2a !important; }}
     .fc-day-today {{ background-color: rgba(255, 215, 0, 0.05) !important; border: 1px solid {ACCENT_GOLD} !important; }}
     .fc-button-primary {{ background-color: {CAMO_GREEN} !important; border: none !important; color: white !important; font-family: 'Oswald' !important; }}
     .fc-toolbar-title {{ color: {ACCENT_GOLD} !important; font-size: 1.2em !important; }}
-    .fc-event {{ border: none !important; cursor: pointer; }}
+    .fc-daygrid-day-number {{ color: {TEXT_COLOR} !important; text-decoration: none !important; }}
     
     input, textarea, select {{ background: #111 !important; color: {ACCENT_GOLD} !important; border: 1px solid #444 !important; font-family: 'Roboto Mono' !important; }}
     .streamlit-expanderHeader {{ background: {CAMO_PANEL} !important; color: {ACCENT_GOLD} !important; font-family: 'Oswald' !important; }}
@@ -164,7 +194,7 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
-# --- 5. ЗАГРУЗКА ДАННЫХ (БЕЗОПАСНАЯ) ---
+# --- 5. DATA LOADING (SMART & SAFE) ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
@@ -178,7 +208,6 @@ try:
         df.columns = df.columns.str.strip()
         
         # УМНЫЙ ПОИСК КОЛОНКИ С ДАТОЙ
-        # Ищем любую колонку, содержащую "дат", "date" или "день"
         date_col = next((c for c in df.columns if "дат" in c.lower() or "date" in c.lower() or "день" in c.lower()), None)
         
         if date_col:
@@ -186,8 +215,7 @@ try:
             df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
             df = df.dropna(subset=['Date'])
         else:
-            # Если не нашли, создаем пустую, чтобы не падало
-            st.warning("⚠️ Не найдена колонка с Датой. Проверьте заголовки в таблице.")
+            st.warning("⚠️ Не найдена колонка с Датой.")
             df['Date'] = pd.to_datetime([])
 
         # Безопасная обработка чисел
@@ -202,12 +230,11 @@ try:
     else:
         df = pd.DataFrame()
 except Exception as e:
-    # st.error(f"Ошибка БД: {e}") 
     df = pd.DataFrame()
 
+# Статистика
 total_xp = len(df)
 rank = get_rank_data(total_xp)
-user_age = (date.today() - USER_BIRTHDAY).days // 365
 
 # --- 6. ИНТЕРФЕЙС ---
 st.markdown(f"""
@@ -270,9 +297,21 @@ if selected == "ДАШБОРД":
     events = []
     if not df.empty and 'Date' in df.columns:
         for d in df['Date'].dt.date.unique():
-            events.append({"title": "✅", "start": str(d), "backgroundColor": CAMO_GREEN, "borderColor": ACCENT_GOLD, "display": "background"})
+            # Зеленый фон для тренировок
+            events.append({
+                "title": "✅", 
+                "start": str(d), 
+                "backgroundColor": CAMO_GREEN, 
+                "borderColor": ACCENT_GOLD,
+                "display": "background"
+            })
     
-    cal = calendar(events=events, options={"headerToolbar": {"left": "prev,next", "center": "title", "right": "today"}, "initialView": "dayGridMonth", "selectable": True, "height": 400}, key="main_cal")
+    cal = calendar(events=events, options={
+        "headerToolbar": {"left": "prev,next", "center": "title", "right": "today"},
+        "initialView": "dayGridMonth",
+        "selectable": True,
+        "height": 400
+    }, key="main_cal")
     
     if cal.get("callback") == "dateClick":
         clicked = cal["dateClick"]["date"]
