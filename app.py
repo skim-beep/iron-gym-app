@@ -10,27 +10,22 @@ import calendar
 from streamlit_option_menu import option_menu
 import base64
 
-# --- 1. НАСТРОЙКА СТРАНИЦЫ ---
-st.set_page_config(
-    page_title="IRON GYM OS",
-    page_icon="🦅",
-    layout="centered", 
-    initial_sidebar_state="collapsed"
-)
+# --- 1. НАСТРОЙКА ---
+st.set_page_config(page_title="IRON GYM OS", page_icon="🦅", layout="centered", initial_sidebar_state="collapsed")
 
-# --- 2. КОНФИГУРАЦИЯ (CAMO) ---
-CAMO_DARK = "#121212"
-CAMO_PANEL = "#1E1E1E"
+# --- 2. КОНФИГУРАЦИЯ ---
+CAMO_DARK = "#0e0e0e"
+CAMO_PANEL = "#1c1f1a"
 CAMO_GREEN = "#4b5320"
 ACCENT_GOLD = "#FFD700"
 ACCENT_SILVER = "#C0C0C0"
-TEXT_COLOR = "#E0E0E0"
+TEXT_COLOR = "#B0B0B0"
 
 AVATAR_URL = "https://i.ibb.co.com/TDhQXVTR/unnamed-3.jpg"
 USER_BIRTHDAY = date(1985, 2, 20)
 USER_WEIGHT_CURRENT = 85.0 
 
-# --- 3. ШЕВРОНЫ (SVG) ---
+# --- 3. ШЕВРОНЫ (SVG 30px) ---
 def get_rank_svg(rank_type, grade):
     color = ACCENT_GOLD
     if rank_type == "OFFICER":
@@ -96,7 +91,7 @@ def detect_muscle_group(exercise_name):
     if any(x in ex for x in ['пресс', 'планка', 'abs', 'core', 'скручивания']): return "ПРЕСС"
     return "ОБЩЕЕ"
 
-# --- 5. CSS (TACTICAL GRID) ---
+# --- 5. CSS (NUCLEAR GRID FIX) ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&display=swap');
@@ -105,20 +100,19 @@ st.markdown(f"""
     .stApp {{ background-color: {CAMO_DARK}; color: {TEXT_COLOR}; font-family: 'Roboto Mono', monospace; }}
     #MainMenu, footer, header {{ visibility: hidden; }}
 
-    /* CARDS */
+    /* TYPOGRAPHY */
+    h1, h2, h3, .tac-font {{ font-family: 'Oswald', sans-serif !important; letter-spacing: 1px; text-transform: uppercase; }}
+    
+    /* CARD */
     .camo-card {{
         background-color: {CAMO_PANEL}; border: 1px solid #333; border-left: 4px solid {CAMO_GREEN};
         padding: 15px; margin-bottom: 20px; border-radius: 4px; box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     }}
 
     /* PROFILE */
-    .avatar-area {{
-        width: 80px; height: 80px; border: 2px solid {ACCENT_GOLD}; border-radius: 50%;
-        overflow: hidden; float: left; margin-right: 15px;
-    }}
+    .avatar-area {{ width: 80px; height: 80px; border: 2px solid {ACCENT_GOLD}; border-radius: 50%; overflow: hidden; float: left; margin-right: 15px; }}
     .avatar-img {{ width: 100%; height: 100%; object-fit: cover; }}
     .user-name {{ font-family: 'Oswald', sans-serif; font-size: 28px; color: #FFF; margin: 0; line-height: 1.1; }}
-    
     .progress-track {{ width: 100%; height: 8px; background: #111; margin-top: 8px; }}
     .progress-fill {{ height: 100%; background: {CAMO_GREEN}; }}
     .stat-badge {{ background: #111; color: {ACCENT_GOLD}; padding: 3px 8px; border: 1px solid {CAMO_GREEN}; font-size: 11px; margin-right: 5px; font-family: 'Oswald'; }}
@@ -133,30 +127,27 @@ st.markdown(f"""
     .streamlit-expanderHeader {{ background-color: {CAMO_PANEL} !important; color: {ACCENT_GOLD} !important; border: 1px solid #333 !important; font-family: 'Oswald' !important; }}
     .rank-row-item {{ display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #333; }}
     
-    /* --- КАЛЕНДАРЬ (ЖЕСТКАЯ СЕТКА) --- */
+    /* --- ЯДЕРНЫЙ ФИКС КАЛЕНДАРЯ (MONOLITH GRID) --- */
+    /* Это заставит колонки Streamlit схлопнуться в плотную сетку */
+    [data-testid="column"] {{
+        padding: 0px !important;
+        margin: 0px !important;
+    }}
     
-    /* Убираем отступы между колонками, чтобы была плитка */
-    [data-testid="column"] {{ padding: 1px !important; }}
-    
-    /* Стиль кнопки календаря (квадрат) */
+    /* Стиль кнопки дня */
     div.stButton > button {{
-        width: 100%; aspect-ratio: 1 / 1; /* Квадрат */
-        border: 1px solid #2A2A2A; 
-        background: #141414; color: #555; 
+        width: 100%; 
+        aspect-ratio: 1 / 1;
+        border: 1px solid #111; 
         border-radius: 0px; 
         font-family: 'Oswald', sans-serif; font-weight: bold; font-size: 14px;
         margin: 0px !important;
         display: flex; align-items: center; justify-content: center;
+        box-shadow: none;
     }}
-    div.stButton > button:hover {{ border-color: {ACCENT_GOLD}; color: {ACCENT_GOLD}; z-index: 2; }}
     
-    /* ЦВЕТА КНОПОК БУДУТ ЗАДАНЫ ЧЕРЕЗ JS НИЖЕ, НО БАЗА ТУТ */
-    
-    /* NAV BUTTONS (стрелки) */
-    button[kind="secondary"] {{ border: none; background: transparent; color: {ACCENT_GOLD}; }}
-
     /* INPUTS */
-    input, textarea, select {{ background: #111 !important; color: #FFF !important; border: 1px solid #444 !important; font-family: 'Roboto Mono' !important; }}
+    input, textarea, select {{ background: #111 !important; color: {ACCENT_GOLD} !important; border: 1px solid #444 !important; font-family: 'Roboto Mono' !important; }}
     </style>
 """, unsafe_allow_html=True)
 
@@ -224,7 +215,7 @@ selected = option_menu(
     default_index=0,
     orientation="horizontal",
     styles={
-        "container": {"padding": "0!important", "background-color": "transparent"},
+        "container": {"padding": "0!important", "background-color": "transparent", "margin-bottom": "20px"},
         "nav-link": {"font-size": "13px", "color": "#777", "margin": "0px", "font-family": "Oswald"},
         "nav-link-selected": {"background-color": CAMO_GREEN, "color": "#FFF"},
     }
@@ -241,7 +232,6 @@ if selected == "ДАШБОРД":
     st.markdown('<div class="tac-header">СТАТУС БРОНИ</div>', unsafe_allow_html=True)
     st.markdown('<div class="camo-card">', unsafe_allow_html=True)
     
-    # Logic: Filter
     filtered_df = df.copy()
     f_msg = "ОБЩАЯ СТАТИСТИКА"
     if st.session_state.sel_date:
@@ -279,9 +269,9 @@ if selected == "ДАШБОРД":
     else: st.info("Нет данных")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # --- 2. КАЛЕНДАРЬ (GRID) ---
+    # --- 2. КАЛЕНДАРЬ (MONOLITH GRID) ---
     st.markdown('<div class="tac-header">КАЛЕНДАРЬ МИССИЙ</div>', unsafe_allow_html=True)
-    st.markdown('<div class="camo-card" style="padding:10px;">', unsafe_allow_html=True)
+    st.markdown('<div class="camo-card" style="padding:5px;">', unsafe_allow_html=True)
     
     def change_m(d):
         m = st.session_state.c_month + d
@@ -291,30 +281,22 @@ if selected == "ДАШБОРД":
         st.session_state.c_month = m
         st.session_state.c_year = y
 
-    # Header Calendar
+    # Header
     c1, c2, c3 = st.columns([1,4,1])
     with c1: st.button("◀", on_click=change_m, args=(-1,), key="p")
     with c2: 
         mn = calendar.month_name[st.session_state.c_month].upper()
-        st.markdown(f"<div style='text-align:center; font-family:Oswald; font-size:18px; color:{ACCENT_GOLD};'>{mn} {st.session_state.c_year}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='text-align:center; font-family:Oswald; font-size:18px; color:{ACCENT_GOLD}; padding-top:10px;'>{mn} {st.session_state.c_year}</div>", unsafe_allow_html=True)
     with c3: st.button("▶", on_click=change_m, args=(1,), key="n")
 
-    # Grid Days
     cal = calendar.monthcalendar(st.session_state.c_year, st.session_state.c_month)
     today = date.today()
     
-    # Headers
-    cols = st.columns(7)
-    for i, d in enumerate(["ПН","ВТ","СР","ЧТ","ПТ","СБ","ВС"]):
-        cols[i].markdown(f"<div style='text-align:center; font-size:10px; color:#555;'>{d}</div>", unsafe_allow_html=True)
-
-    # Days Logic
+    # Grid Days
     for week in cal:
         cols = st.columns(7)
         for i, day in enumerate(week):
-            if day == 0:
-                cols[i].write("")
-            else:
+            if day != 0:
                 curr = date(st.session_state.c_year, st.session_state.c_month, day)
                 is_tr = curr in trained_dates
                 is_tod = (curr == today)
@@ -326,24 +308,15 @@ if selected == "ДАШБОРД":
                     else: st.session_state.sel_date = None
                     st.rerun()
 
-                # Stylization via CSS Injection based on state
-                bg = "#121212" # Default dark
-                fg = "#444"
-                bdr = "1px solid #222"
-                
-                if is_tr: # Green (Trained)
-                    bg = CAMO_GREEN; fg = "#FFF"; bdr = f"1px solid {ACCENT_GOLD}"
-                elif curr < today: # Red (Missed)
-                    bg = "#250000"; fg = "#700"; bdr = "1px solid #400"
-                
-                if is_tod: # Gold Border (Today)
-                    bdr = f"2px solid {ACCENT_GOLD}"; fg = ACCENT_GOLD
-                
+                # Colors
+                bg = "#121212"; fg = "#444"; bdr = "1px solid #1c1c1c"
+                if is_tr: bg = CAMO_GREEN; fg = "#FFF"; bdr = f"1px solid {ACCENT_GOLD}"
+                elif curr < today: bg = "#250000"; fg = "#700"; bdr = "1px solid #300"
+                if is_tod: bdr = f"2px solid {ACCENT_GOLD}"; fg = ACCENT_GOLD
                 if is_fut: fg = "#222"
 
-                # Apply style specifically to this button using JavaScript
                 st.markdown(f"""<script>
-                    var buttons = window.parent.document.querySelectorAll('div[data-testid="column"] button');
+                    var buttons = window.parent.document.querySelectorAll('button');
                     for (var i = 0; i < buttons.length; i++) {{
                         if (buttons[i].innerText === "{label}") {{
                             buttons[i].style.backgroundColor = "{bg}";
@@ -352,6 +325,9 @@ if selected == "ДАШБОРД":
                         }}
                     }}
                 </script>""", unsafe_allow_html=True)
+            else:
+                # Пустой слот для выравнивания
+                cols[i].write("")
     st.markdown('</div>', unsafe_allow_html=True)
 
     # --- 3. ТАБЛИЦА ---
