@@ -5,3 +5,4 @@ google-generativeai
 gspread
 oauth2client
 streamlit-option-menu
+streamlit-calendar
