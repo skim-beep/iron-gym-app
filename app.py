@@ -18,44 +18,77 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. НАСТРОЙКИ И ВЕЧНЫЕ ИКОНКИ (BASE64) ---
+# --- 2. ЦВЕТОВАЯ ПАЛИТРА (CAMO) ---
+CAMO_DARK = "#1a1c15"       # Основной фон (почти черный)
+CAMO_GREEN = "#4b5320"      # Армейский зеленый
+CAMO_LIGHT = "#8f9779"      # Светлый хаки (текст)
+ACCENT_GOLD = "#FFD700"     # Золото для званий
+ALERT_RED = "#8B0000"       # Красный для пропусков
+CARD_BG = "#242621"         # Фон карточек
+
 AVATAR_URL = "https://i.ibb.co.com/TDhQXVTR/unnamed-3.jpg"
 USER_BIRTHDAY = date(1985, 2, 20)
 USER_WEIGHT_CURRENT = 85.0 
-ACCENT_COLOR = "#D4AF37" # Золото
-ARMY_GREEN = "#6B7A57"   # Хаки для тренировок
-MUTED_RED = "#A95C5C"    # Приглушенный красный для пропусков
 
-# Вшитые иконки (никогда не сломаются)
-ICON_STAR = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHBvbHlnb24gcG9pbnRzPSI1MCw1IDYxLDM1IDk1LDM1IDY3LDU1IDc5LDkwIDUwLDcwIDIxLDkwIDMzLDU1IDUsMzUgMzksMzUiIGZpbGw9IiNENEFGMzciIHN0cm9rZT0iIzFDMUMxRSIgc3Ryb2rZS13aWR0aD0iMiIvPjwvc3ZnPg=="
-ICON_PV2 = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHBhdGggZD0iTTUsNDAgTDUwLDE1IEw5NSw0MCBMNTAsNjUgWl0iIGZpbGw9IiNENEFGMzciIHN0cm9rZT0iIzFDMUMxRSIgc3Ryb2rZS13aWR0aD0iMiIvPjwvc3ZnPg=="
-ICON_PFC = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHBhdGggZD0iTTUsMzAgTDUwLDUgTDk1LDMwIEw5NSw1MCBMNTAsNzUgTDUsNTAgWl0iIGZpbGw9IiNENEFGMzciIHN0cm9rZT0iIzFDMUMxRSIgc3Ryb2rZS13aWR0aD0iMiIvPjwvc3ZnPg=="
-ICON_SPC = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHBhdGggZD0iTTUwLDUgTDk1LDMwIEw5NSw3MCBMNTAsOTUgTDUsNzAgTDUsMzAgWl0iIGZpbGw9IiNENEFGMzciIHN0cm9rZT0iIzFDMUMxRSIgc3Ryb2rZS13aWR0aD0iMiIvPjxwYXRoIGQ9Ii01LDQwIEw1MCwxNSBMOTUsNDAgTDUwLDY1IFpNMzAsNDAgTDUwLDMwIEw3MCw0MCBMNTAsNTAgWl0iIGZpbGw9IiNENEFGMzciIHN0cm9rZT0iIzFDMUMxRSIgc3Ryb2rZS13aWR0aD0iMSIvPjwvc3ZnPg=="
-ICON_SGT = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHBhdGggZD0iTTUsMjAgTDUwLDUgTDk1LDIwIEw5NSwzNSBMNTAsMjAgTDUsMzUgWl0gTTUsNDAgTDUwLDI1IEw5NSw0MCBMOTNSw1NSBMNTAsNDAgTDUsNTUgWl0gTTUsNjAgTDUwLDQ1IEw5NSw2MCBMOTUsNzUgTDUwLDYwIEw1LDc1IFpNMjAsNzAgTDUwLDg1IEw4MCw3MCIgZmlsbD0iI0Q0QUYzNyIgc3Ryb2rZT0iIzFDMUMxRSIgc3Ryb2rZS13aWR0aD0iMiIvPjwvc3ZnPg=="
-ICON_OFFICER = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIiB2aWV3Qm94PSIwIDAgMTAwIDEwMCI+PHJlY3QgeD0iMzAiIHk9IjIwIiB3aWR0aD0iNDAiIGhlaWdodD0iNjAiIGZpbGw9IiNENEFGMzciIHN0cm9rZT0iIzFDMUMxRSIgc3Ryb2rZS13aWR0aD0iMiIvPjwvc3ZnPg=="
+# --- 3. ГЕНЕРАТОР ШЕВРОНОВ (SVG) ---
+# Рисуем шевроны кодом, чтобы они никогда не пропадали
+def get_rank_svg(rank_code):
+    color = ACCENT_GOLD
+    svg = f'<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 100 100" fill="none" stroke="{color}" stroke-width="4">'
+    
+    if rank_code == "PV1": # Звезда (Рекрут)
+        svg += '<polygon points="50,10 61,35 90,35 67,55 77,85 50,70 23,85 33,55 10,35 39,35" fill="none"/>'
+        
+    elif rank_code == "PV2": # 1 Галочка
+        svg += '<path d="M10,40 L50,15 L90,40" />'
+        
+    elif rank_code == "PFC": # 1 Галочка + Дуга
+        svg += '<path d="M10,35 L50,10 L90,35" /> <path d="M10,50 Q50,70 90,50" />'
+        
+    elif rank_code == "SPC": # Щит (Специалист)
+        svg += '<path d="M10,20 L90,20 L90,60 L50,90 L10,60 Z" /> <path d="M50,15 L80,30 L80,50 L50,80 L20,50 L20,30 Z" fill="{color}" stroke="none"/>'.format(color=color)
+        
+    elif rank_code == "SGT": # 3 Галочки
+        svg += '<path d="M10,40 L50,15 L90,40" /> <path d="M10,55 L50,30 L90,55" /> <path d="M10,70 L50,45 L90,70" />'
+        
+    elif rank_code == "SSG": # 3 Галочки + 1 Дуга
+        svg += '<path d="M10,35 L50,10 L90,35" /> <path d="M10,50 L50,25 L90,50" /> <path d="M10,65 L50,40 L90,65" /> <path d="M15,80 Q50,95 85,80" />'
+        
+    elif rank_code == "SFC": # 3 Галочки + 2 Дуги
+        svg += '<path d="M10,35 L50,10 L90,35" /> <path d="M10,50 L50,25 L90,50" /> <path d="M10,65 L50,40 L90,65" /> <path d="M15,80 Q50,95 85,80" /> <path d="M15,90 Q50,105 85,90" />'
+        
+    elif rank_code in ["CMD", "OFFICER"]: # Полоса (Офицер)
+        svg += '<rect x="35" y="20" width="30" height="60" rx="2" fill="{color}" stroke="none"/>'.format(color=color)
+        
+    else: # Дефолт
+        svg += '<circle cx="50" cy="50" r="30" />'
+        
+    svg += '</svg>'
+    b64 = base64.b64encode(svg.encode('utf-8')).decode("utf-8")
+    return f"data:image/svg+xml;base64,{b64}"
 
-# --- 3. СИСТЕМА ЗВАНИЙ (РУССКИЙ) ---
 RANK_SYSTEM = [
-    (0, 9, "РЕКРУТ", "PV1", ICON_STAR),
-    (10, 24, "РЯДОВОЙ", "PV2", ICON_PV2),
-    (25, 49, "РЯДОВОЙ 1 КЛАССА", "PFC", ICON_PFC),
-    (50, 74, "СПЕЦИАЛИСТ", "SPC", ICON_SPC),
-    (75, 99, "СЕРЖАНТ", "SGT", ICON_SGT),
-    (100, 129, "ШТАБ-СЕРЖАНТ", "SSG", ICON_SGT), # Используем SGT за неимением другого
-    (130, 159, "СЕРЖАНТ 1 КЛАССА", "SFC", ICON_SGT),
-    (160, 9999, "ОФИЦЕР", "CMD", ICON_OFFICER)
+    (0, 9, "РЕКРУТ", "PV1"),
+    (10, 24, "РЯДОВОЙ", "PV2"),
+    (25, 49, "РЯДОВОЙ 1 КЛ", "PFC"),
+    (50, 74, "СПЕЦИАЛИСТ", "SPC"),
+    (75, 99, "СЕРЖАНТ", "SGT"),
+    (100, 129, "ШТАБ-СЕРЖАНТ", "SSG"),
+    (130, 159, "СЕРЖ 1 КЛАССА", "SFC"),
+    (160, 9999, "ОФИЦЕР", "CMD")
 ]
 
 # --- 4. ФУНКЦИИ ---
 def get_rank_data(xp):
-    for r_min, r_max, title, abbr, icon in RANK_SYSTEM:
+    for r_min, r_max, title, abbr in RANK_SYSTEM:
         if r_min <= xp <= r_max:
             needed = r_max - r_min + 1
             current = xp - r_min
             percent = int((current / needed) * 100)
             to_go = r_max - xp + 1
-            return {"title": title, "abbr": abbr, "icon": icon, "progress": percent, "next_xp": to_go}
-    return {"title": "ЛЕГЕНДА", "abbr": "GOD", "icon": ICON_OFFICER, "progress": 100, "next_xp": 0}
+            return {"title": title, "abbr": abbr, "icon": get_rank_svg(abbr), "progress": percent, "next_xp": to_go}
+    # God mode
+    return {"title": "ЛЕГЕНДА", "abbr": "GOD", "icon": get_rank_svg("CMD"), "progress": 100, "next_xp": 0}
 
 def calculate_age(birthdate):
     today = date.today()
@@ -66,96 +99,115 @@ def detect_muscle_group(exercise_name):
     if any(x in ex for x in ['жим лежа', 'жим гантелей', 'бабочка', 'chest', 'отжимания', 'брусья', 'груд', 'жим в тренажере']): return "ГРУДЬ"
     if any(x in ex for x in ['тяга', 'подтягивания', 'спина', 'back', 'row', 'становая']): return "СПИНА"
     if any(x in ex for x in ['присед', 'ноги', 'выпады', 'legs', 'squat', 'разгибания', 'сгибания']): return "НОГИ"
-    if any(x in ex for x in ['бицепс', 'трицепс', 'молот', 'arms', 'bicep', 'концентрированный']): return "РУКИ"
+    if any(x in ex for x in ['бицепс', 'трицепс', 'молот', 'arms', 'bicep', 'концентрированный', 'французский']): return "РУКИ"
     if any(x in ex for x in ['жим стоя', 'плечи', 'махи', 'shouder', 'press', 'разведение']): return "ПЛЕЧИ"
     if any(x in ex for x in ['пресс', 'планка', 'abs', 'core', 'скручивания']): return "ПРЕСС"
     return "ОБЩЕЕ"
 
-# --- 5. CSS СТИЛЬ "СВЕТЛОЕ СТЕКЛО" ---
+# --- 5. TACTICAL CAMO CSS (STYLES) ---
 st.markdown(f"""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap');
 
+    /* BASE BACKGROUND */
     .stApp {{
-        background-color: #EEF2F7; /* Очень светлый серо-голубой фон */
-        font-family: 'Inter', sans-serif;
-        color: #1C1C1E;
+        background-color: {CAMO_DARK};
+        font-family: 'Roboto Mono', monospace;
+        color: #E0E0E0;
     }}
+    
     #MainMenu, footer, header {{ visibility: hidden; }}
 
-    /* СТЕКЛЯННАЯ ПЛИТКА */
-    .glass-tile {{
-        background: rgba(255, 255, 255, 0.7); /* Полупрозрачный белый */
-        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.8);
-        padding: 20px;
-        margin-bottom: 20px;
+    /* CAMO CARD CONTAINER */
+    .camo-card {{
+        background-color: {CARD_BG};
+        border-left: 4px solid {CAMO_GREEN};
+        border-top: 1px solid #333;
+        border-right: 1px solid #333;
+        border-bottom: 1px solid #333;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-radius: 4px; /* Угловатые края */
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        position: relative;
+    }}
+    
+    /* ДЕКОРАТИВНЫЕ БОЛТЫ */
+    .camo-card::after {{
+        content: '+';
+        position: absolute;
+        top: 5px; right: 5px;
+        color: {CAMO_GREEN};
+        font-weight: bold;
     }}
 
-    /* ПРОФИЛЬ */
-    .profile-card {{ display: flex; align-items: center; }}
+    /* PROFILE */
     .avatar-area {{
-        width: 80px; height: 80px; border-radius: 50%; border: 2px solid {ACCENT_COLOR}; 
-        overflow: hidden; margin-right: 20px; flex-shrink: 0; box-shadow: 0 4px 10px rgba(212, 175, 55, 0.2);
+        width: 80px; height: 80px; 
+        border: 2px solid {ACCENT_GOLD}; 
+        border-radius: 10px; /* Квадрат с легким скруглением */
+        overflow: hidden; float: left; margin-right: 15px;
     }}
     .avatar-img {{ width: 100%; height: 100%; object-fit: cover; }}
-    .info-area {{ flex-grow: 1; }}
+    
     .user-name {{
-        font-family: 'Black Ops One', cursive; font-size: 26px; color: {ACCENT_COLOR}; 
-        letter-spacing: 1px; margin: 0; text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        font-family: 'Black Ops One', cursive; 
+        font-size: 28px; 
+        color: #FFF; 
+        margin: 0; line-height: 1;
+        letter-spacing: 2px;
     }}
-    .rank-row {{ display: flex; align-items: center; margin-bottom: 8px; }}
-    .rank-title {{ color: #555; font-weight: 700; margin-right: 10px; font-size: 14px; }}
-    .rank-icon-img {{ height: 30px; width: auto; object-fit: contain; }}
     
-    .progress-track {{
-        width: 100%; height: 8px; background: rgba(0,0,0,0.05); border-radius: 4px; overflow: hidden; margin-top: 5px;
-    }}
-    .progress-fill {{ height: 100%; background: linear-gradient(90deg, {ACCENT_COLOR}, #F0E68C); }}
-    .xp-text {{ font-size: 10px; color: #777; float: right; margin-top: 2px; font-weight: 600; }}
-
-    .stat-badge {{
-        background: rgba(255,255,255,0.5); padding: 4px 10px; border-radius: 8px; font-size: 11px; 
-        font-weight: 600; color: #333; margin-right: 5px; display: inline-flex; align-items: center; border: 1px solid rgba(0,0,0,0.05);
-    }}
-
-    /* ЗАГОЛОВКИ */
-    .section-title {{
+    /* CUSTOM EXPANDER FOR RANKS */
+    .streamlit-expanderHeader {{
         font-family: 'Black Ops One', cursive;
-        font-size: 16px; color: #333; text-transform: uppercase; letter-spacing: 1px; margin: 25px 0 10px 0;
-        padding-left: 10px; border-left: 3px solid {ACCENT_COLOR};
+        color: {ACCENT_GOLD} !important;
+        background-color: rgba(255, 215, 0, 0.05) !important;
+        border: 1px solid {ACCENT_GOLD} !important;
+        border-radius: 4px !important;
     }}
-
-    /* КНОПКИ */
-    div.stButton > button {{
-        width: 100%; background: rgba(255,255,255,0.8); color: {ACCENT_COLOR}; border: 1px solid {ACCENT_COLOR};
-        border-radius: 12px; padding: 12px; font-weight: 700; transition: 0.2s;
-    }}
-    div.stButton > button:hover {{ background: {ACCENT_COLOR}; color: white; }}
-    div.stButton > button:active {{ transform: scale(0.98); }}
-
-    /* КАЛЕНДАРЬ - КНОПКИ ДНЕЙ */
-    .cal-btn {{
-        width: 100%; height: 45px; border-radius: 10px; border: none; font-weight: 700; font-size: 14px;
-        color: #333; background: rgba(255,255,255,0.5); box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        cursor: pointer; transition: 0.2s;
-    }}
-    .cal-btn:hover {{ background: rgba(255,255,255,0.8); }}
-    .cal-btn.trained {{ background: {ARMY_GREEN}; color: white; }}
-    .cal-btn.missed {{ background: {MUTED_RED}; color: white; }}
-    .cal-btn.today {{ border: 2px solid {ACCENT_COLOR}; color: {ACCENT_COLOR}; background: rgba(212, 175, 55, 0.1); }}
-    .cal-btn.empty {{ background: transparent; box-shadow: none; cursor: default; }}
     
-    /* ПОЛЯ ВВОДА В СТЕКЛЕ */
-    div[data-baseweb="input"], div[data-baseweb="select"] > div, div[data-baseweb="textarea"] {{
-        background-color: rgba(255,255,255,0.5) !important; 
-        border: 1px solid rgba(0,0,0,0.1) !important;
-        backdrop-filter: blur(5px);
+    .rank-icon-img {{ height: 35px; width: auto; vertical-align: middle; }}
+    
+    /* PROGRESS BAR */
+    .progress-track {{
+        width: 100%; height: 10px; background: #111; border: 1px solid #444; margin-top: 8px;
     }}
+    .progress-fill {{ height: 100%; background: repeating-linear-gradient(45deg, {CAMO_GREEN}, {CAMO_GREEN} 10px, #3a4019 10px, #3a4019 20px); }}
+    
+    /* BADGES */
+    .stat-badge {{
+        background: #111; color: {CAMO_LIGHT}; padding: 4px 8px; 
+        border: 1px solid {CAMO_GREEN}; font-size: 11px; margin-right: 5px;
+    }}
+
+    /* BUTTONS */
+    div.stButton > button {{
+        background: {CAMO_GREEN}; color: #FFF; 
+        border: 1px solid #6b7536; border-radius: 0px; 
+        font-family: 'Black Ops One', cursive;
+        letter-spacing: 1px;
+    }}
+    div.stButton > button:hover {{ border-color: {ACCENT_GOLD}; color: {ACCENT_GOLD}; }}
+    
+    /* CALENDAR BUTTONS */
+    .cal-btn {{
+        width: 100%; height: 40px; border: 1px solid #333; 
+        background: #1a1a1a; color: #777; font-weight: bold; cursor: pointer;
+    }}
+    .cal-btn.trained {{ background: {CAMO_GREEN}; color: #FFF; border: 1px solid {ACCENT_GOLD}; }}
+    .cal-btn.missed {{ background: {ALERT_RED}; color: #FFF; opacity: 0.6; }}
+    .cal-btn.today {{ border: 2px solid {ACCENT_GOLD}; color: {ACCENT_GOLD}; }}
+    
+    /* HEADERS */
+    .tac-header {{
+        font-family: 'Black Ops One', cursive; font-size: 18px; color: {CAMO_LIGHT};
+        border-bottom: 2px solid {CAMO_GREEN}; padding-bottom: 5px; margin: 20px 0 10px 0;
+    }}
+    
+    /* INPUTS */
+    input, textarea, select {{ background: #111 !important; color: white !important; border: 1px solid #444 !important; }}
     </style>
 """, unsafe_allow_html=True)
 
@@ -185,151 +237,160 @@ try:
 except Exception as e:
     df = pd.DataFrame()
 
-# Статистика
 total_xp = len(df)
 rank = get_rank_data(total_xp)
 user_age = calculate_age(USER_BIRTHDAY)
 trained_dates = set(df['День/Дата'].dt.date) if not df.empty else set()
 
-# --- 7. ПРОФИЛЬ И СПИСОК ЗВАНИЙ ---
+# --- 7. ПРОФИЛЬ (CAMO STYLE) ---
+# Верхняя часть с аватаром
 st.markdown(f"""
-<div class="glass-tile profile-card">
+<div class="camo-card" style="display:flex; align-items:center;">
     <div class="avatar-area"><img src="{AVATAR_URL}" class="avatar-img"></div>
-    <div class="info-area">
-        <div class="user-name">СЕРГЕЙ</div>
-        <div class="rank-row">
-            <span class="rank-title">{rank['title']}</span>
-            <img src="{rank['icon']}" class="rank-icon-img">
+    <div style="flex-grow:1;">
+        <div class="user-name">SERGEY</div>
+        <div style="margin-bottom:5px;">
+            <span class="stat-badge">AGE: {user_age}</span>
+            <span class="stat-badge">WGHT: {USER_WEIGHT_CURRENT}KG</span>
+            <span class="stat-badge" style="border-color:{ACCENT_GOLD}; color:{ACCENT_GOLD}">XP: {total_xp}</span>
         </div>
         <div class="progress-track"><div class="progress-fill" style="width: {rank['progress']}%;"></div></div>
-        <div style="margin-top:4px;">
-            <span class="stat-badge">ОПЫТ: {total_xp}</span>
-            <span class="xp-text">СЛЕД. ЗВАНИЕ ЧЕРЕЗ: {rank['next_xp']}</span>
-        </div>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-with st.expander("📜 ПОСМОТРЕТЬ ВСЕ ЗВАНИЯ И ШЕВРОНЫ"):
-    for r_min, r_max, title, abbr, icon in RANK_SYSTEM:
+# РАСКРЫВАЮЩИЙСЯ СПИСОК ЗВАНИЙ (ВМЕСТО КНОПКИ)
+with st.expander(f"{rank['title']} // {rank['abbr']} (НАЖМИ ДЛЯ СПИСКА)"):
+    st.markdown(f"<div style='text-align:center; margin-bottom:10px;'><img src='{rank['icon']}' width='80'></div>", unsafe_allow_html=True)
+    st.markdown("---")
+    for r_min, r_max, title, abbr in RANK_SYSTEM:
+        # Рисуем мини-шеврон для каждого
+        icon_html = get_rank_svg(abbr).replace('width="60"', 'width="30"').replace('height="60"', 'height="30"')
+        active_style = f"color:{ACCENT_GOLD}; font-weight:bold;" if title == rank['title'] else "color:#777;"
         st.markdown(f"""
-        <div style="display:flex; align-items:center; margin-bottom:10px; padding: 5px; border-bottom: 1px solid rgba(0,0,0,0.05);">
-            <img src="{icon}" style="height:40px; width:auto; margin-right:15px;">
-            <div>
-                <div style="font-weight:bold; color:#333;">{title} ({abbr})</div>
-                <div style="font-size:12px; color:#777;">Миссий: {r_min} - {r_max}</div>
-            </div>
+        <div style="display:flex; align-items:center; margin-bottom:5px;">
+            <img src="{icon_html}" style="margin-right:10px;">
+            <div style="{active_style} font-family:'Roboto Mono'; font-size:12px;">{abbr} - {title} <span style="font-size:10px; opacity:0.5">({r_min}-{r_max})</span></div>
         </div>
         """, unsafe_allow_html=True)
 
-# --- 8. МЕНЮ (РУССКОЕ, КОРОТКОЕ) ---
+# --- 8. МЕНЮ ---
+# Настраиваем цвета option_menu под камуфляж
 selected = option_menu(
     menu_title=None,
     options=["ДАШБОРД", "ЖУРНАЛ", "ТРЕНЕР"],
-    icons=["bar-chart-fill", "journal-richtext", "cpu-fill"],
+    icons=["crosshair", "clipboard-data", "robot"], # Иконки поменял на более тактические
     menu_icon="cast",
     default_index=0,
     orientation="horizontal",
     styles={
-        "container": {"padding": "0!important", "background-color": "transparent", "margin-bottom": "20px"},
-        "nav-link": {"font-size": "12px", "color": "#333", "margin": "2px", "--hover-color": "rgba(212, 175, 55, 0.2)"},
-        "nav-link-selected": {"background-color": ACCENT_COLOR, "color": "#FFF"},
+        "container": {"padding": "0!important", "background-color": "transparent"},
+        "nav-link": {"font-size": "12px", "color": "#AAA", "margin": "2px", "font-family": "Black Ops One"},
+        "nav-link-selected": {"background-color": CAMO_GREEN, "color": "#FFF", "border": "1px solid #6b7536"},
     }
 )
 
-# --- 9. ДАШБОРД (ИНТЕРАКТИВНЫЙ) ---
+# --- 9. ДАШБОРД ---
 if selected == "ДАШБОРД":
     
-    # Инициализация состояний календаря
+    # КАЛЕНДАРЬ
+    st.markdown('<div class="tac-header">ТАКТИЧЕСКИЙ КАЛЕНДАРЬ</div>', unsafe_allow_html=True)
+    st.markdown('<div class="camo-card">', unsafe_allow_html=True)
+    
     if 'c_year' not in st.session_state: st.session_state.c_year = date.today().year
     if 'c_month' not in st.session_state: st.session_state.c_month = date.today().month
-    if 'selected_date' not in st.session_state: st.session_state.selected_date = None
+    if 'sel_date' not in st.session_state: st.session_state.sel_date = None
 
-    # --- КАЛЕНДАРЬ (ИНТЕРАКТИВНЫЙ БЛОК) ---
-    st.markdown('<div class="section-title">ТАКТИЧЕСКИЙ КАЛЕНДАРЬ</div>', unsafe_allow_html=True)
-    calendar_container = st.container()
-    with calendar_container:
-        st.markdown('<div class="glass-tile">', unsafe_allow_html=True)
-        
-        # Навигация месяца
-        c1, c2, c3 = st.columns([1, 4, 1])
-        def change_m(d):
-            m = st.session_state.c_month + d
-            y = st.session_state.c_year
-            if m > 12: m = 1; y += 1
-            elif m < 1: m = 12; y -= 1
-            st.session_state.c_month = m
-            st.session_state.c_year = y
-            # Не сбрасываем выбранную дату при переключении месяца, чтобы можно было смотреть историю
-        
-        with c1: st.button("◀", on_click=change_m, args=(-1,), key="prev_m")
-        with c2:
-            m_name = calendar.month_name[st.session_state.c_month].upper()
-            st.markdown(f"<div style='text-align:center; font-family:\"Black Ops One\"; font-size:18px; color:#333; padding-top:10px;'>{m_name} {st.session_state.c_year}</div>", unsafe_allow_html=True)
-        with c3: st.button("▶", on_click=change_m, args=(1,), key="next_m")
+    def change_m(d):
+        m = st.session_state.c_month + d
+        y = st.session_state.c_year
+        if m>12: m=1; y+=1
+        elif m<1: m=12; y-=1
+        st.session_state.c_month = m
+        st.session_state.c_year = y
 
-        # Сетка календаря на кнопках
-        cal = calendar.monthcalendar(st.session_state.c_year, st.session_state.c_month)
-        today = date.today()
-        
-        # Заголовки дней недели
-        cols = st.columns(7)
-        days_header = ["ПН", "ВТ", "СР", "ЧТ", "ПТ", "СБ", "ВС"]
-        for i, col in enumerate(cols):
-            col.markdown(f"<div style='text-align:center; font-size:11px; color:#777; margin-bottom:5px;'>{days_header[i]}</div>", unsafe_allow_html=True)
+    # Навигация календаря встроена
+    col_l, col_c, col_r = st.columns([1,4,1])
+    with col_l: st.button("<", on_click=change_m, args=(-1,), key="p_m")
+    with col_c: 
+        m_name = calendar.month_name[st.session_state.c_month].upper()
+        st.markdown(f"<div style='text-align:center; font-family:\"Black Ops One\"; font-size:20px; color:{ACCENT_GOLD}; padding-top:5px;'>{m_name} {st.session_state.c_year}</div>", unsafe_allow_html=True)
+    with col_r: st.button(">", on_click=change_m, args=(1,), key="n_m")
 
-        # Генерация кнопок дней
-        for week in cal:
-            cols = st.columns(7)
-            for i, day in enumerate(week):
-                if day == 0:
-                    cols[i].markdown('<div class="cal-btn empty"></div>', unsafe_allow_html=True)
-                else:
-                    curr_date = date(st.session_state.c_year, st.session_state.c_month, day)
-                    btn_class = "cal-btn"
-                    is_trained = curr_date in trained_dates
-                    
-                    if curr_date == today: btn_class += " today"
-                    elif is_trained: btn_class += " trained"
-                    elif curr_date < today: btn_class += " missed"
-                    
-                    # Кнопка дня
-                    if cols[i].button(f"{day}", key=f"day_{curr_date}", help=f"Нажмите, чтобы увидеть данные за {curr_date.strftime('%d.%m.%Y')}"):
-                        if is_trained:
-                            st.session_state.selected_date = curr_date
-                        else:
-                            st.session_state.selected_date = None # Сброс если нажали на пустой день
-                            st.toast("В этот день тренировок не было.", icon="ℹ️")
-
-                    # Применение CSS стилей к кнопке через JS хак (Streamlit не дает стилизовать кнопки напрямую)
-                    st.markdown(f"""
-                        <script>
-                        var elements = window.parent.document.querySelectorAll('button[kind="secondary"]');
-                        for (var i = 0; i < elements.length; i++) {{
-                            if (elements[i].innerText == "{day}" && elements[i].parentElement.parentElement.parentElement.innerHTML.includes("day_{curr_date}")) {{
-                                elements[i].className = '{btn_class}';
-                            }}
-                        }}
-                        </script>
-                        """, unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-
-    # --- ФИЛЬТРАЦИЯ ДАННЫХ ---
-    filtered_df = df.copy()
-    filter_status_text = "ОБЗОР ЗА ВСЁ ВРЕМЯ"
+    # Сетка
+    cal = calendar.monthcalendar(st.session_state.c_year, st.session_state.c_month)
+    today = date.today()
     
-    if st.session_state.selected_date:
-        filtered_df = df[df['День/Дата'].dt.date == st.session_state.selected_date]
-        filter_status_text = f"✅ ФИЛЬТР: {st.session_state.selected_date.strftime('%d.%m.%Y')}"
-        if st.button("❌ СБРОСИТЬ ФИЛЬТР (ПОКАЗАТЬ ВСЁ)"):
-            st.session_state.selected_date = None
-            st.rerun()
-            
-    st.markdown(f"<div style='text-align:center; font-weight:bold; color:{ACCENT_COLOR}; margin-bottom:10px;'>{filter_status_text}</div>", unsafe_allow_html=True)
+    # Дни недели
+    cols = st.columns(7)
+    for i, d in enumerate(["ПН","ВТ","СР","ЧТ","ПТ","СБ","ВС"]):
+        cols[i].markdown(f"<div style='text-align:center; font-size:10px; color:#555;'>{d}</div>", unsafe_allow_html=True)
 
-    # --- РАДАР ---
-    st.markdown('<div class="section-title">СТАТУС БРОНИ (ПОДХОДЫ)</div>', unsafe_allow_html=True)
-    st.markdown('<div class="glass-tile">', unsafe_allow_html=True)
+    for week in cal:
+        cols = st.columns(7)
+        for i, day in enumerate(week):
+            if day != 0:
+                curr = date(st.session_state.c_year, st.session_state.c_month, day)
+                # Определяем стиль кнопки через KEY
+                is_trained = curr in trained_dates
+                is_today = (curr == today)
+                
+                # Emoji для статуса (так как стилизовать кнопку сложно, используем эмодзи в тексте кнопки)
+                label = f"{day}"
+                
+                # Кнопка
+                if cols[i].button(label, key=f"d_{curr}"):
+                    if is_trained:
+                        st.session_state.sel_date = curr
+                    else:
+                        st.session_state.sel_date = None
+
+                # CSS Hack для раскраски кнопок
+                btn_color = "#222" # Default
+                txt_color = "#777"
+                border = "1px solid #333"
+                
+                if is_trained: 
+                    btn_color = CAMO_GREEN
+                    txt_color = "#FFF"
+                    border = f"1px solid {ACCENT_GOLD}"
+                elif curr < today:
+                    btn_color = "#3a1a1a" # Dark Red bg
+                    txt_color = "#a55"
+                
+                if is_today:
+                    border = f"2px solid {ACCENT_GOLD}"
+                    txt_color = ACCENT_GOLD
+                
+                # Применяем стиль к конкретной кнопке через JS (самый надежный способ в Streamlit для сетки)
+                st.markdown(f"""
+                <script>
+                    var btns = window.parent.document.querySelectorAll('button');
+                    for (var i=0; i<btns.length; i++) {{
+                        if (btns[i].innerText == "{label}" && !btns[i].disabled) {{
+                            btns[i].style.backgroundColor = "{btn_color}";
+                            btns[i].style.color = "{txt_color}";
+                            btns[i].style.border = "{border}";
+                            btns[i].style.borderRadius = "4px";
+                        }}
+                    }}
+                </script>
+                """, unsafe_allow_html=True)
+                
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # ФИЛЬТР
+    filtered_df = df.copy()
+    if st.session_state.sel_date:
+        filtered_df = df[df['День/Дата'].dt.date == st.session_state.sel_date]
+        st.markdown(f"<div style='text-align:center; color:{ACCENT_GOLD}; border:1px solid {ACCENT_GOLD}; padding:5px; margin-bottom:10px;'>ОТЧЕТ ЗА: {st.session_state.sel_date.strftime('%d.%m.%Y')}</div>", unsafe_allow_html=True)
+        if st.button("СБРОСИТЬ ФИЛЬТР"):
+            st.session_state.sel_date = None
+            st.rerun()
+
+    # РАДАР
+    st.markdown('<div class="tac-header">СТАТУС БРОНИ (SETS)</div>', unsafe_allow_html=True)
+    st.markdown('<div class="camo-card">', unsafe_allow_html=True)
     if not filtered_df.empty:
         muscle_data = filtered_df.groupby('Muscle')['Сет'].count().reset_index()
         muscle_data.columns = ['Muscle', 'Sets']
@@ -339,70 +400,67 @@ if selected == "ДАШБОРД":
         
         fig = go.Figure(data=go.Scatterpolar(
             r=radar_df['Sets'], theta=radar_df['Muscle'], fill='toself',
-            line=dict(color=ACCENT_COLOR, width=2),
-            fillcolor='rgba(212, 175, 55, 0.3)'
+            line=dict(color=ACCENT_GOLD, width=2),
+            fillcolor='rgba(255, 215, 0, 0.2)',
+            marker=dict(color=ACCENT_GOLD, size=6)
         ))
         fig.update_layout(
             polar=dict(
-                radialaxis=dict(visible=True, showticklabels=False, linecolor='rgba(0,0,0,0.1)'),
-                angularaxis=dict(linecolor='rgba(0,0,0,0.1)', tickfont=dict(color='#555', size=11, weight="bold")),
+                radialaxis=dict(visible=True, showticklabels=False, linecolor='#333'),
+                angularaxis=dict(linecolor='#333', tickfont=dict(color=CAMO_LIGHT, size=10, family="Roboto Mono")),
                 bgcolor='rgba(0,0,0,0)'
             ),
-            showlegend=False, height=280, margin=dict(l=30, r=30, t=20, b=20),
-            paper_bgcolor='rgba(0,0,0,0)', font=dict(color='#1C1C1E')
+            showlegend=False, height=280, margin=dict(l=30, r=30, t=10, b=10),
+            paper_bgcolor='rgba(0,0,0,0)', font=dict(color='#FFF')
         )
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar':False})
-    else: st.info("Нет данных за выбранный период.")
+    else: st.info("НЕТ ДАННЫХ")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # --- ТАБЛИЦА ---
-    st.markdown('<div class="section-title">ЖУРНАЛ БОЕВЫХ ДЕЙСТВИЙ</div>', unsafe_allow_html=True)
+    # ТАБЛИЦА
+    st.markdown('<div class="tac-header">ЖУРНАЛ ЗАПИСЕЙ</div>', unsafe_allow_html=True)
     if not filtered_df.empty:
         hdf = filtered_df.copy().sort_values(by=['День/Дата', 'Сет'], ascending=[False, True])
         hdf['День/Дата'] = hdf['День/Дата'].dt.strftime('%d.%m')
         st.dataframe(hdf[['День/Дата', 'Сет', 'Упражнение', 'Вес (кг)', 'Повт']], use_container_width=True, hide_index=True)
-    else: st.info("Нет записей.")
 
 # --- ЖУРНАЛ ---
 elif selected == "ЖУРНАЛ":
-    st.markdown('<div class="section-title">НОВАЯ МИССИЯ</div>', unsafe_allow_html=True)
-    st.markdown('<div class="glass-tile">', unsafe_allow_html=True)
+    st.markdown('<div class="tac-header">НОВАЯ МИССИЯ</div>', unsafe_allow_html=True)
+    st.markdown('<div class="camo-card">', unsafe_allow_html=True)
     with st.form("entry_form"):
-        d = st.date_input("Дата")
+        d = st.date_input("ДАТА")
         c1, c2 = st.columns([1,2])
-        with c1: s_grp = st.text_input("Сет (Группа)", placeholder="№1")
-        with c2: ex_name = st.text_input("Упражнение")
+        with c1: s_grp = st.text_input("СЕТ", "№1")
+        with c2: ex_name = st.text_input("УПРАЖНЕНИЕ")
         c3, c4, c5 = st.columns(3)
-        with c3: s_num = st.number_input("Подход №", 1, 10, 1)
-        with c4: w_val = st.number_input("Вес (кг)", step=2.5)
-        with c5: r_val = st.number_input("Повт", 1, 100, 10)
+        with c3: s_num = st.number_input("ПОДХОД", 1, 10, 1)
+        with c4: w_val = st.number_input("ВЕС", step=2.5)
+        with c5: r_val = st.number_input("ПОВТ", 1, 100, 10)
         c6, c7 = st.columns(2)
-        with c6: tech = st.text_input("План/Техника")
-        with c7: comm = st.text_input("Мой коммент")
+        with c6: tech = st.text_input("ТЕХНИКА")
+        with c7: comm = st.text_input("КОММЕНТ")
         
-        if st.form_submit_button("ЗАПИСАТЬ ДАННЫЕ"):
-            if ex_name:
-                try:
-                    sheet.append_row([d.strftime("%Y-%m-%d"), s_grp, ex_name, s_num, w_val, r_val, w_val*r_val, tech, comm])
-                    st.success("ДАННЫЕ ВНЕСЕНЫ УСПЕШНО")
-                    st.rerun()
-                except: st.error("ОШИБКА ЗАПИСИ")
-            else: st.warning("Введите название упражнения")
+        if st.form_submit_button("ЗАПИСАТЬ"):
+            try:
+                sheet.append_row([d.strftime("%Y-%m-%d"), s_grp, ex_name, s_num, w_val, r_val, w_val*r_val, tech, comm])
+                st.success("ЗАПИСАНО")
+                st.rerun()
+            except: st.error("ОШИБКА")
     st.markdown('</div>', unsafe_allow_html=True)
 
 # --- ТРЕНЕР ---
 elif selected == "ТРЕНЕР":
-    st.markdown(f'<div class="section-title">ИНСТРУКТОР // {rank["abbr"]}</div>', unsafe_allow_html=True)
-    st.markdown('<div class="glass-tile" style="min-height:400px;">', unsafe_allow_html=True)
+    st.markdown(f'<div class="tac-header">ИНСТРУКТОР // {rank["abbr"]}</div>', unsafe_allow_html=True)
+    st.markdown('<div class="camo-card">', unsafe_allow_html=True)
     if "messages" not in st.session_state: st.session_state.messages = []
     for m in st.session_state.messages:
         with st.chat_message(m["role"]): st.markdown(m["content"])
-    if p := st.chat_input("Запросить инструктаж..."):
+    if p := st.chat_input("ВОПРОС..."):
         st.session_state.messages.append({"role": "user", "content": p})
         with st.chat_message("user"): st.markdown(p)
         model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
-        # Промпт на русском для тренера
-        res = model.generate_content(f"Ты суровый армейский инструктор по физподготовке. Звание пользователя: {rank['title']}. Отвечай коротко, четко, по-военному, на русском языке. Вопрос: {p}")
+        res = model.generate_content(f"Ты армейский инструктор. Отвечай кратко, сурово, на русском. Вопрос: {p}")
         with st.chat_message("assistant"): st.markdown(res.text)
         st.session_state.messages.append({"role": "assistant", "content": res.text})
     st.markdown('</div>', unsafe_allow_html=True)
