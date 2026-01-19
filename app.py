@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime, date, timedelta
+from datetime import datetime, date
 import plotly.graph_objects as go
 import google.generativeai as genai
 import gspread
@@ -21,10 +21,12 @@ st.set_page_config(
 AVATAR_URL = "https://i.ibb.co.com/TDhQXVTR/unnamed-3.jpg"
 USER_BIRTHDAY = date(1985, 2, 20)
 USER_WEIGHT_CURRENT = 85.0 
+ACCENT_COLOR = "#FFD700" # GOLD
 
-# --- 3. СИСТЕМА ЗВАНИЙ ---
+# --- 3. СИСТЕМА ЗВАНИЙ (STABLE LINKS) ---
+# Используем no-referrer ссылки и стабильные SVG
 RANK_SYSTEM = [
-    (0, 9, "PRIVATE RECRUIT", "PV1", "https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Emblem_of_the_United_States_Department_of_the_Army.svg/100px-Emblem_of_the_United_States_Department_of_the_Army.svg.png"), 
+    (0, 9, "PRIVATE RECRUIT", "PV1", "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/United_States_Army_Star_Logo.svg/200px-United_States_Army_Star_Logo.svg.png"), # Звезда вместо пустоты
     (10, 24, "PRIVATE (PV2)", "PV2", "https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/US_Army_E2.svg/100px-US_Army_E2.svg.png"),
     (25, 49, "PFC", "PFC", "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/US_Army_E3.svg/100px-US_Army_E3.svg.png"),
     (50, 74, "SPECIALIST", "SPC", "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/US_Army_E4_SPC.svg/100px-US_Army_E4_SPC.svg.png"),
@@ -35,20 +37,10 @@ RANK_SYSTEM = [
     (190, 219, "FIRST SERGEANT", "1SG", "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d3/US_Army_E8_1SG.svg/100px-US_Army_E8_1SG.svg.png"),
     (220, 249, "SGT MAJOR", "SGM", "https://upload.wikimedia.org/wikipedia/commons/thumb/fa/US_Army_E9_SGM.svg/100px-US_Army_E9_SGM.svg.png"),
     (250, 299, "COMMAND SGT MAJOR", "CSM", "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/US_Army_E9_CSM.svg/100px-US_Army_E9_CSM.svg.png"),
-    (300, 329, "2ND LIEUTENANT", "2LT", "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/US-Army-O1-Shoulder.svg/100px-US-Army-O1-Shoulder.svg.png"),
-    (330, 359, "1ST LIEUTENANT", "1LT", "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/US-Army-O2-Shoulder.svg/100px-US-Army-O2-Shoulder.svg.png"),
-    (360, 389, "CAPTAIN", "CPT", "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/US-Army-O3-Collar.svg/100px-US-Army-O3-Collar.svg.png"),
-    (390, 419, "MAJOR", "MAJ", "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/US-Army-O4-Shoulder.svg/100px-US-Army-O4-Shoulder.svg.png"),
-    (420, 449, "LT COLONEL", "LTC", "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/US-Army-O5-Shoulder.svg/100px-US-Army-O5-Shoulder.svg.png"),
-    (450, 479, "COLONEL", "COL", "https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/US-Army-O6-Shoulder.svg/100px-US-Army-O6-Shoulder.svg.png"),
-    (480, 509, "BRIGADIER GENERAL", "BG", "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/US-Army-O7-Shoulder.svg/100px-US-Army-O7-Shoulder.svg.png"),
-    (510, 539, "MAJOR GENERAL", "MG", "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/US-Army-O8-Shoulder.svg/100px-US-Army-O8-Shoulder.svg.png"),
-    (540, 569, "LT GENERAL", "LTG", "https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/US-Army-O9-Shoulder.svg/100px-US-Army-O9-Shoulder.svg.png"),
-    (570, 599, "GENERAL", "GEN", "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/US-Army-O10-Shoulder.svg/100px-US-Army-O10-Shoulder.svg.png"),
-    (600, 9999, "GENERAL OF ARMY", "GA", "https://upload.wikimedia.org/wikipedia/commons/thumb/7/77/US-Army-General_of_the_Army-Shoulder.svg/100px-US-Army-General_of_the_Army-Shoulder.svg.png")
+    (300, 9999, "OFFICER", "CMD", "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/US-Army-O1-Shoulder.svg/100px-US-Army-O1-Shoulder.svg.png")
 ]
 
-# --- 4. ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ---
+# --- 4. ФУНКЦИИ ---
 def get_rank_data(xp):
     for r_min, r_max, title, abbr, icon in RANK_SYSTEM:
         if r_min <= xp <= r_max:
@@ -67,143 +59,98 @@ def detect_muscle_group(exercise_name):
     ex = str(exercise_name).lower()
     if any(x in ex for x in ['жим лежа', 'жим гантелей', 'бабочка', 'chest', 'отжимания', 'брусья', 'груд']): return "ГРУДЬ"
     if any(x in ex for x in ['тяга', 'подтягивания', 'спина', 'back', 'row']): return "СПИНА"
-    if any(x in ex for x in ['присед', 'ноги', 'выпады', 'legs', 'squat', 'бег', 'эллипс']): return "НОГИ"
+    if any(x in ex for x in ['присед', 'ноги', 'выпады', 'legs', 'squat', 'бег', 'эллипс', 'разминка']): return "НОГИ/КАРДИО"
     if any(x in ex for x in ['бицепс', 'трицепс', 'молот', 'arms', 'bicep']): return "РУКИ"
     if any(x in ex for x in ['жим стоя', 'плечи', 'махи', 'shouder', 'press', 'разведение']): return "ПЛЕЧИ"
     if any(x in ex for x in ['пресс', 'планка', 'abs', 'core', 'скручивания']): return "КОР"
     return "ОБЩЕЕ"
 
-# --- 5. CSS СТИЛИ (ИСПРАВЛЕНЫ СКОБКИ) ---
+# --- 5. DARK TACTICAL CSS ---
 st.markdown(f"""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;900&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap');
 
-    .stApp {{ background-color: #F2F3F7; font-family: 'Inter', sans-serif; }}
+    /* BASE */
+    .stApp {{
+        background: linear-gradient(135deg, #121212 0%, #000000 100%);
+        font-family: 'Inter', sans-serif;
+        color: #E0E0E0;
+    }}
     #MainMenu, footer, header {{ visibility: hidden; }}
+    h1, h2, h3, p, span, div {{ color: #E0E0E0; }}
 
-    div[data-testid="stVerticalBlock"] > div[style*="background-color"] {{
-        background-color: #FFFFFF;
-        border-radius: 20px;
-        padding: 20px;
-        box-shadow: 0px 4px 20px rgba(0,0,0,0.05);
+    /* GLASS CARD */
+    .glass-card {{
+        background: rgba(30, 30, 30, 0.6);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 215, 0, 0.1);
+        border-radius: 16px;
+        padding: 16px;
+        margin-bottom: 16px;
     }}
 
-    .profile-card {{
-        background-color: #FFFFFF;
-        padding: 20px;
-        border-radius: 24px;
-        box-shadow: 0 4px 25px rgba(0,0,0,0.05);
-        margin-bottom: 25px;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        border: 1px solid #FFFFFF;
-    }}
-    
+    /* PROFILE */
+    .profile-card {{ display: flex; align-items: center; }}
     .avatar-area {{
-        width: 85px;
-        height: 85px;
-        border-radius: 50%;
-        overflow: hidden;
-        border: 2px solid #D4AF37;
-        flex-shrink: 0;
-        margin-right: 20px;
+        width: 80px; height: 80px; border-radius: 16px;
+        border: 2px solid {ACCENT_COLOR}; box-shadow: 0 0 15px {ACCENT_COLOR}40;
+        overflow: hidden; margin-right: 15px; flex-shrink: 0;
     }}
-    
     .avatar-img {{ width: 100%; height: 100%; object-fit: cover; }}
-    .info-area {{ flex-grow: 1; width: 100%; }}
-    
+    .info-area {{ flex-grow: 1; }}
     .user-name {{
-        font-size: 26px;
-        font-weight: 900;
-        color: #1C1C1E;
-        line-height: 1;
-        margin-bottom: 5px;
+        font-family: 'Black Ops One', cursive; font-size: 24px;
+        color: #FFF; letter-spacing: 1px; margin: 0;
     }}
-    
-    .rank-row {{
-        display: flex;
-        align-items: center;
-        margin-bottom: 10px;
-    }}
-    
-    .rank-title {{
-        font-family: 'Black Ops One', cursive;
-        font-size: 14px;
-        color: #D4AF37;
-        text-transform: uppercase;
-        margin-right: 10px;
-    }}
-    
-    .rank-icon-img {{ height: 30px; width: auto; }}
+    .rank-row {{ display: flex; align-items: center; margin-bottom: 8px; }}
+    .rank-title {{ color: {ACCENT_COLOR}; font-weight: 700; margin-right: 10px; font-size: 14px; }}
+    /* ВАЖНО: object-fit contain для иконок */
+    .rank-icon-img {{ height: 32px; width: auto; object-fit: contain; filter: drop-shadow(0 0 5px {ACCENT_COLOR}); }}
     
     .progress-track {{
-        width: 100%;
-        height: 8px;
-        background-color: #E5E5EA;
-        border-radius: 4px;
-        margin-bottom: 5px;
-        overflow: hidden;
+        width: 100%; height: 6px; background: rgba(255,255,255,0.1);
+        border-radius: 3px; overflow: hidden; margin-top: 5px;
     }}
-    
     .progress-fill {{
-        height: 100%;
-        border-radius: 4px;
-        background: linear-gradient(90deg, #00C6FF 0%, #0072FF 100%);
-        box-shadow: 0 0 10px rgba(0, 198, 255, 0.7);
+        height: 100%; background: linear-gradient(90deg, {ACCENT_COLOR}, #FFF);
+        box-shadow: 0 0 10px {ACCENT_COLOR};
     }}
-    
-    .xp-text {{
-        font-size: 10px;
-        color: #0072FF;
-        font-weight: 700;
-        text-transform: uppercase;
-        float: right;
-    }}
-    
-    .stats-row {{ display: flex; gap: 8px; flex-wrap: wrap; margin-top: 15px; }}
-    
+    .xp-text {{ font-size: 10px; color: #888; float: right; margin-top: 2px; }}
+
     .stat-badge {{
-        background-color: #F2F2F7;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 11px;
-        font-weight: 700;
-        color: #3A3A3C;
-        display: flex; align-items: center; gap: 5px;
+        background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 6px;
+        font-size: 10px; border: 1px solid rgba(255,255,255,0.1); margin-right: 5px;
+        display: inline-flex; align-items: center;
     }}
-    
+
+    /* BUTTONS */
     div.stButton > button {{
-        width: 100%;
-        background-color: #1C1C1E;
-        color: #FFFFFF;
-        border-radius: 12px;
-        padding: 14px;
-        font-weight: 600;
-        border: none;
+        width: 100%; background: rgba(255,215,0,0.1); color: {ACCENT_COLOR};
+        border: 1px solid {ACCENT_COLOR}50; border-radius: 10px; font-weight: 700;
+        transition: 0.2s;
     }}
-    
-    /* CALENDAR STYLES - ТЕПЕРЬ С ДВОЙНЫМИ СКОБКАМИ */
+    div.stButton > button:active {{ background: {ACCENT_COLOR}; color: black; }}
+
+    /* CALENDAR */
     .calendar-table {{ width: 100%; border-collapse: separate; border-spacing: 4px; }}
     .calendar-cell {{ 
-        text-align: center; 
-        padding: 10px; 
-        border-radius: 8px; 
-        font-size: 14px; 
-        font-weight: 600; 
-        color: #1C1C1E;
+        text-align: center; padding: 10px 5px; border-radius: 8px; 
+        font-size: 13px; font-weight: 700; background: rgba(255,255,255,0.03); 
+        color: #CCC; border: 1px solid rgba(255,255,255,0.05);
     }}
-    .day-header {{ color: #8E8E93; font-size: 12px; text-transform: uppercase; }}
-    .day-trained {{ background-color: #8E8E93; color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }}
-    .day-missed {{ background-color: #FFB3B3; color: #8b0000; }}
-    .day-today {{ border: 2px solid #D4AF37; color: #D4AF37; font-weight: 900; }}
-    .day-empty {{ background-color: transparent; }}
-    .day-future {{ color: #D1D1D6; }}
+    .day-trained {{ background: {ACCENT_COLOR}20; color: {ACCENT_COLOR}; border: 1px solid {ACCENT_COLOR}60; }}
+    .day-missed {{ background: rgba(200,50,50,0.2); color: #FF5555; border: 1px solid #FF555540; }}
+    .day-today {{ border: 2px solid {ACCENT_COLOR}; color: #FFF; }}
+
+    /* INPUTS */
+    input, textarea {{ background-color: rgba(0,0,0,0.3) !important; color: white !important; border: 1px solid #333 !important; }}
     </style>
 """, unsafe_allow_html=True)
 
-# --- 6. ЗАГРУЗКА ДАННЫХ ---
+# --- 6. DATA LOADING ---
 try:
     API_KEY = st.secrets["GOOGLE_API_KEY"]
     genai.configure(api_key=API_KEY)
@@ -215,48 +162,54 @@ try:
     df = pd.DataFrame(raw_data) if raw_data else pd.DataFrame()
     
     if not df.empty:
+        # Приведение типов для новой структуры
         df['Вес (кг)'] = pd.to_numeric(df['Вес (кг)'], errors='coerce').fillna(0)
-        df['Повт'] = pd.to_numeric(df['Повт'], errors='coerce').fillna(0)
         df['Тоннаж'] = pd.to_numeric(df['Тоннаж'], errors='coerce').fillna(0)
         df['День/Дата'] = pd.to_datetime(df['День/Дата'], errors='coerce')
         df = df.dropna(subset=['День/Дата'])
         df['Muscle'] = df['Упражнение'].apply(detect_muscle_group)
-        
-except Exception as e:
+except:
     df = pd.DataFrame()
 
-user_age = calculate_age(USER_BIRTHDAY)
-trained_dates = set()
-if not df.empty:
-    trained_dates = set(df['День/Дата'].dt.date)
-
+# Вычисляем ранг
 total_xp = len(df)
 rank = get_rank_data(total_xp)
+user_age = calculate_age(USER_BIRTHDAY)
+trained_dates = set(df['День/Дата'].dt.date) if not df.empty else set()
 
-# --- 7. ПРОФИЛЬ ---
-profile_html = f"""
-<div class="profile-card">
-<div class="avatar-area"><img src="{AVATAR_URL}" class="avatar-img"></div>
-<div class="info-area">
-<div class="user-name">SERGEY</div>
-<div class="rank-row">
-<span class="rank-title">{rank['title']} // {rank['abbr']}</span>
-<img src="{rank['icon']}" class="rank-icon-img">
-</div>
-<div class="progress-track">
-<div class="progress-fill" style="width: {rank['progress']}%;"></div>
-</div>
-<span class="xp-text">NEXT RANK IN: {rank['next_xp']} MISSIONS</span>
-<div class="stats-row">
-<div class="stat-badge">🧬 {user_age} YRS</div>
-<div class="stat-badge">🛡️ {USER_WEIGHT_CURRENT} KG</div>
-</div>
-</div>
-</div>
-"""
-st.markdown(profile_html, unsafe_allow_html=True)
+# --- 7. HEADER & SYNC ---
+col_logo, col_sync = st.columns([3, 1])
+with col_logo:
+    st.markdown(f"<div style='font-family:\"Black Ops One\"; font-size:20px; color:{ACCENT_COLOR};'>IRON GYM OS</div>", unsafe_allow_html=True)
+with col_sync:
+    if st.button("🔄 SYNC"):
+        st.rerun()
 
-# --- 8. МЕНЮ ---
+# ПРОФИЛЬ (HTML)
+# ВАЖНО: referrerPolicy="no-referrer" помогает от блокировок картинок
+st.markdown(f"""
+<div class="glass-card profile-card">
+    <div class="avatar-area">
+        <img src="{AVATAR_URL}" class="avatar-img">
+    </div>
+    <div class="info-area">
+        <div class="user-name">SERGEY</div>
+        <div class="rank-row">
+            <span class="rank-title">{rank['title']}</span>
+            <img src="{rank['icon']}" class="rank-icon-img" referrerPolicy="no-referrer">
+        </div>
+        <div class="progress-track">
+            <div class="progress-fill" style="width: {rank['progress']}%;"></div>
+        </div>
+        <div style="margin-top:4px;">
+            <span class="stat-badge">XP: {total_xp}</span>
+            <span class="xp-text">NEXT: {rank['next_xp']}</span>
+        </div>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+# --- 8. MENU ---
 selected = option_menu(
     menu_title=None,
     options=["DASHBOARD", "LOGBOOK", "AI COACH"],
@@ -266,162 +219,129 @@ selected = option_menu(
     orientation="horizontal",
     styles={
         "container": {"padding": "0!important", "background-color": "transparent"},
-        "nav-link-selected": {"background-color": "#000", "color": "#fff"},
+        "nav-link": {"font-size": "12px", "color": "white"},
+        "nav-link-selected": {"background-color": f"{ACCENT_COLOR}20", "color": ACCENT_COLOR, "border": f"1px solid {ACCENT_COLOR}"},
     }
 )
 
 # --- 9. DASHBOARD ---
 if selected == "DASHBOARD":
     
-    # RADAR CHART
-    st.subheader("BODY ARMOR STATUS")
+    st.markdown(f'<div style="color:{ACCENT_COLOR}; font-weight:bold; margin-bottom:10px;">TACTICAL OVERVIEW</div>', unsafe_allow_html=True)
+    
+    # RADAR
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
     if not df.empty:
         muscle_data = df.groupby('Muscle')['Тоннаж'].sum().reset_index()
-        all_muscles = ["ГРУДЬ", "СПИНА", "НОГИ", "РУКИ", "ПЛЕЧИ", "КОР"]
+        all_muscles = ["ГРУДЬ", "СПИНА", "НОГИ/КАРДИО", "РУКИ", "ПЛЕЧИ", "КОР"]
         radar_df = pd.DataFrame({"Muscle": all_muscles})
         radar_df = radar_df.merge(muscle_data, on="Muscle", how="left").fillna(0)
         
         fig = go.Figure(data=go.Scatterpolar(
-            r=radar_df['Тоннаж'],
-            theta=radar_df['Muscle'],
-            fill='toself',
-            name='Total Volume',
-            line_color='#D4AF37',
-            fillcolor='rgba(212, 175, 55, 0.3)'
+            r=radar_df['Тоннаж'], theta=radar_df['Muscle'], fill='toself',
+            line_color=ACCENT_COLOR, fillcolor=f'{ACCENT_COLOR}30'
         ))
         fig.update_layout(
             polar=dict(
-                radialaxis=dict(visible=True, showticklabels=False),
-                bgcolor='#F2F3F7'
+                radialaxis=dict(visible=True, showticklabels=False, linecolor='#333'),
+                angularaxis=dict(linecolor='#333', tickfont=dict(color='#CCC', size=10)),
+                bgcolor='rgba(0,0,0,0)'
             ),
-            showlegend=False,
-            height=300,
-            margin=dict(l=40, r=40, t=20, b=20),
-            paper_bgcolor='rgba(0,0,0,0)',
+            showlegend=False, height=280, margin=dict(l=30, r=30, t=20, b=20),
+            paper_bgcolor='rgba(0,0,0,0)', font=dict(color='white')
         )
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar':False})
-    else:
-        st.info("No data for radar.")
+    else: st.info("No data")
+    st.markdown('</div>', unsafe_allow_html=True)
 
-    # TACTICAL CALENDAR
-    st.subheader("MISSION CALENDAR")
-    
-    if 'cal_year' not in st.session_state: st.session_state.cal_year = date.today().year
-    if 'cal_month' not in st.session_state: st.session_state.cal_month = date.today().month
+    # CALENDAR
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    if 'c_year' not in st.session_state: st.session_state.c_year = date.today().year
+    if 'c_month' not in st.session_state: st.session_state.c_month = date.today().month
 
-    def change_month(delta):
-        m = st.session_state.cal_month + delta
-        y = st.session_state.cal_year
-        if m > 12:
-            m = 1
-            y += 1
-        elif m < 1:
-            m = 12
-            y -= 1
-        st.session_state.cal_month = m
-        st.session_state.cal_year = y
+    def change_m(d):
+        m = st.session_state.c_month + d
+        y = st.session_state.c_year
+        if m>12: m=1; y+=1
+        elif m<1: m=12; y-=1
+        st.session_state.c_month = m
+        st.session_state.c_year = y
 
-    col_prev, col_month, col_next = st.columns([1, 2, 1])
-    with col_prev: st.button("◀", on_click=change_month, args=(-1,))
-    with col_month: 
-        month_name = calendar.month_name[st.session_state.cal_month]
-        st.markdown(f"<h3 style='text-align: center; margin:0;'>{month_name} {st.session_state.cal_year}</h3>", unsafe_allow_html=True)
-    with col_next: st.button("▶", on_click=change_month, args=(1,))
+    c1, c2, c3 = st.columns([1,3,1])
+    with c1: st.button("◀", on_click=change_m, args=(-1,))
+    with c2: 
+        m_name = calendar.month_name[st.session_state.c_month].upper()
+        st.markdown(f"<div style='text-align:center; font-weight:bold; color:{ACCENT_COLOR}; padding-top:10px;'>{m_name} {st.session_state.c_year}</div>", unsafe_allow_html=True)
+    with c3: st.button("▶", on_click=change_m, args=(1,))
 
-    cal = calendar.monthcalendar(st.session_state.cal_year, st.session_state.cal_month)
+    cal = calendar.monthcalendar(st.session_state.c_year, st.session_state.c_month)
     today = date.today()
     
-    html_cal = '<table class="calendar-table"><thead><tr>'
-    days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-    for d in days: html_cal += f'<th class="day-header">{d}</th>'
-    html_cal += '</tr></thead><tbody>'
-
+    h = '<table class="calendar-table"><thead><tr>'
+    for d in ["M","T","W","T","F","S","S"]: h += f'<th class="day-header">{d}</th>'
+    h += '</tr></thead><tbody>'
     for week in cal:
-        html_cal += '<tr>'
+        h += '<tr>'
         for day in week:
-            if day == 0:
-                html_cal += '<td class="calendar-cell day-empty"></td>'
+            if day==0: h += '<td class="calendar-cell day-empty"></td>'
             else:
-                current_date = date(st.session_state.cal_year, st.session_state.cal_month, day)
-                css_class = "calendar-cell"
-                
-                if current_date == today:
-                    css_class += " day-today"
-                elif current_date in trained_dates:
-                    css_class += " day-trained"
-                elif current_date < today and current_date not in trained_dates:
-                    css_class += " day-missed"
-                elif current_date > today:
-                    css_class += " day-future"
+                curr = date(st.session_state.c_year, st.session_state.c_month, day)
+                cls = "calendar-cell"
+                if curr == today: cls += " day-today"
+                elif curr in trained_dates: cls += " day-trained"
+                elif curr < today: cls += " day-missed"
+                else: cls += " day-future"
+                h += f'<td class="{cls}">{day}</td>'
+        h += '</tr>'
+    h += '</tbody></table>'
+    st.markdown(h, unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
 
-                html_cal += f'<td class="{css_class}">{day}</td>'
-        html_cal += '</tr>'
-    html_cal += '</tbody></table>'
-    
-    st.markdown(html_cal, unsafe_allow_html=True)
-    
-    st.markdown("""
-    <div style="display:flex; gap:15px; justify-content:center; margin-top:10px; font-size:11px; color:#666;">
-        <div style="display:flex; align-items:center;"><div style="width:10px; height:10px; background:#8E8E93; margin-right:5px; border-radius:2px;"></div>COMPLETED</div>
-        <div style="display:flex; align-items:center;"><div style="width:10px; height:10px; background:#FFB3B3; margin-right:5px; border-radius:2px;"></div>MISSED</div>
-        <div style="display:flex; align-items:center;"><div style="width:10px; height:10px; border:1px solid #D4AF37; margin-right:5px; border-radius:2px;"></div>TODAY</div>
-    </div>
-    """, unsafe_allow_html=True)
-    
-    st.markdown("---")
-    tab_hist, tab_rec = st.tabs(["📝 HISTORY", "🏆 RECORDS"])
-    
-    with tab_hist:
-        if not df.empty:
-            history_df = df.copy()
-            history_df = history_df.sort_values(by='День/Дата', ascending=False)
-            history_df['День/Дата'] = history_df['День/Дата'].dt.strftime('%d.%m.%Y')
-            cols = ['День/Дата', 'Упражнение', 'Вес (кг)', 'Повт', 'Тоннаж', 'Комментарий / Техника']
-            st.dataframe(history_df[cols], use_container_width=True, hide_index=True)
-            
-    with tab_rec:
-        if not df.empty:
-            records = df.groupby('Упражнение')['Вес (кг)'].max().reset_index()
-            records.columns = ['EXERCISE', 'PR (KG)']
-            records = records.sort_values('PR (KG)', ascending=False).head(15)
-            st.dataframe(records, use_container_width=True, hide_index=True)
+    # HISTORY TABLE
+    st.markdown(f'<div style="color:{ACCENT_COLOR}; font-weight:bold; margin-bottom:10px;">COMBAT LOG</div>', unsafe_allow_html=True)
+    if not df.empty:
+        hdf = df.copy().sort_values(by='День/Дата', ascending=False)
+        hdf['День/Дата'] = hdf['День/Дата'].dt.strftime('%d.%m')
+        # Показываем самые важные колонки для мобилки
+        st.dataframe(hdf[['День/Дата', 'Упражнение', 'Вес (кг)', 'Повт']], use_container_width=True, hide_index=True)
 
 # --- LOGBOOK ---
 elif selected == "LOGBOOK":
-    st.caption("NEW ENTRY")
-    with st.form("add"):
-        c_date, c_set, c_ex = st.columns([1.5, 1, 2.5])
-        with c_date: log_date = st.date_input("Дата", date.today())
-        with c_set: set_group = st.text_input("Сет", placeholder="№1")
-        with c_ex: ex = st.text_input("Упражнение", placeholder="Жим...")
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    with st.form("entry_form"):
+        d = st.date_input("Date")
+        c1, c2 = st.columns([1,2])
+        with c1: s_grp = st.text_input("Set", "№1")
+        with c2: ex_name = st.text_input("Exercise")
         
-        c_podhod, c_weight, c_reps = st.columns(3)
-        with c_podhod: set_num = st.number_input("Подход", 1, 10, 1)
-        with c_weight: w = st.number_input("Вес", step=2.5)
-        with c_reps: r = st.number_input("Повт", step=1, value=10)
-            
-        c_tech, c_my = st.columns(2)
-        with c_tech: tech_note = st.text_input("Техника", placeholder="План")
-        with c_my: my_note = st.text_input("Мой коммент", placeholder="Факт")
+        c3, c4, c5 = st.columns(3)
+        with c3: s_num = st.number_input("#", 1, 10, 1)
+        with c4: w_val = st.number_input("Kg", step=2.5)
+        with c5: r_val = st.number_input("Reps", 1, 100, 10)
+        
+        c6, c7 = st.columns(2)
+        with c6: tech = st.text_input("Plan")
+        with c7: comm = st.text_input("Fact")
         
         if st.form_submit_button("SAVE MISSION"):
-            if ex:
-                try:
-                    sheet.append_row([log_date.strftime("%Y-%m-%d"), set_group, ex, set_num, w, r, w*r, tech_note, my_note])
-                    st.success("Saved!")
-                    st.rerun()
-                except: st.error("Error")
+            try:
+                sheet.append_row([d.strftime("%Y-%m-%d"), s_grp, ex_name, s_num, w_val, r_val, w_val*r_val, tech, comm])
+                st.success("SAVED")
+                st.rerun()
+            except: st.error("ERR")
+    st.markdown('</div>', unsafe_allow_html=True)
 
-# --- AI COACH ---
+# --- COACH ---
 elif selected == "AI COACH":
-    st.caption(f"INSTRUCTOR // {rank['abbr']}")
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
     if "messages" not in st.session_state: st.session_state.messages = []
     for m in st.session_state.messages:
         with st.chat_message(m["role"]): st.markdown(m["content"])
-    if p := st.chat_input("..."):
+    if p := st.chat_input("Intel request..."):
         st.session_state.messages.append({"role": "user", "content": p})
         with st.chat_message("user"): st.markdown(p)
         model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
-        res = model.generate_content(f"Tactical fit coach. User Rank: {rank['title']}. Q: {p}")
+        res = model.generate_content(f"You are a tactical gym coach. Rank: {rank['title']}. Q: {p}")
         with st.chat_message("assistant"): st.markdown(res.text)
         st.session_state.messages.append({"role": "assistant", "content": res.text})
+    st.markdown('</div>', unsafe_allow_html=True)
