@@ -16,43 +16,37 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. iOS DARK THEME COLORS ---
+# --- 2. APPLE DESIGN COLORS ---
 IOS_BG = "#000000"           # True Black
-IOS_CARD = "#1C1C1E"         # Secondary System Fill
-IOS_ACCENT = "#0A84FF"       # System Blue
+IOS_CARD = "#1C1C1E"         # Secondary System Fill (Dark Gray)
+IOS_BLUE = "#0A84FF"         # System Blue (Action)
+IOS_GRAY_BTN = "#2C2C2E"     # Tertiary System Fill (Buttons)
 IOS_TEXT = "#FFFFFF"
 IOS_SUBTEXT = "#8E8E93"      # System Gray
-IOS_BORDER = "rgba(255, 255, 255, 0.15)"
+IOS_BORDER = "rgba(255, 255, 255, 0.1)"
 
 AVATAR_URL = "https://i.ibb.co.com/TDhQXVTR/unnamed-3.jpg"
 USER_BIRTHDAY = date(1985, 2, 20)
 USER_WEIGHT_CURRENT = 85.0 
 
-# --- 3. ЗНАКИ РАЗЛИЧИЯ (РЕАЛИСТИЧНЫЕ ФОТО/ВЕКТОРЫ) ---
-# Максимально похожие на ваши картинки: вышивка для солдат, металл для офицеров
+# --- 3. ASSETS (REALISTIC) ---
 RANK_IMGS = {
-    # ENLISTED (Gold on Green Patch)
     "PV1": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/U.S._Army_E-1_insignia.jpg/100px-U.S._Army_E-1_insignia.jpg",
     "PV2": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/US_Army_E2_insignia.jpg/100px-US_Army_E2_insignia.jpg",
     "PFC": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/US_Army_E3_insignia.jpg/100px-US_Army_E3_insignia.jpg",
     "SPC": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/US_Army_E4_insignia.jpg/100px-US_Army_E4_insignia.jpg",
-    "CPL": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/US_Army_E4_CPL_insignia.jpg/100px-US_Army_E4_CPL_insignia.jpg",
     "SGT": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/US_Army_E5_insignia.jpg/100px-US_Army_E5_insignia.jpg",
     "SSG": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/US_Army_E6_insignia.jpg/100px-US_Army_E6_insignia.jpg",
     "SFC": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/53/US_Army_E7_insignia.jpg/100px-US_Army_E7_insignia.jpg",
     "MSG": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/US_Army_E8_MSG_insignia.jpg/100px-US_Army_E8_MSG_insignia.jpg",
     "1SG": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/US_Army_E8_1SG_insignia.jpg/100px-US_Army_E8_1SG_insignia.jpg",
     "SGM": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/US_Army_E9_SGM_insignia.jpg/100px-US_Army_E9_SGM_insignia.jpg",
-    
-    # OFFICERS (Metal Pins)
-    "2LT": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/US-O1_insignia.svg/100px-US-O1_insignia.svg.png", # Gold
-    "1LT": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/US-O2_insignia.svg/100px-US-O2_insignia.svg.png", # Silver
-    "CPT": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/US-O3_insignia.svg/100px-US-O3_insignia.svg.png", 
-    "MAJ": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/US-O4_insignia.svg/100px-US-O4_insignia.svg.png", # Gold Oak
-    "LTC": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/US-O5_insignia.svg/100px-US-O5_insignia.svg.png", # Silver Oak
-    "COL": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/US-O6_insignia.svg/100px-US-O6_insignia.svg.png", # Eagle
-    
-    # GENERALS (Silver Stars)
+    "2LT": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/US-O1_insignia.svg/50px-US-O1_insignia.svg.png",
+    "1LT": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/US-O2_insignia.svg/50px-US-O2_insignia.svg.png",
+    "CPT": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/US-O3_insignia.svg/50px-US-O3_insignia.svg.png",
+    "MAJ": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/US-O4_insignia.svg/50px-US-O4_insignia.svg.png",
+    "LTC": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/US-O5_insignia.svg/50px-US-O5_insignia.svg.png",
+    "COL": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/US-O6_insignia.svg/100px-US-O6_insignia.svg.png",
     "BG": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Army-USA-OF-07.svg/100px-Army-USA-OF-07.svg.png",
     "MG": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/Army-USA-OF-08.svg/100px-Army-USA-OF-08.svg.png",
     "LTG": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Army-USA-OF-09.svg/100px-Army-USA-OF-09.svg.png",
@@ -89,14 +83,14 @@ def detect_muscle(ex):
     if any(x in ex for x in ['пресс', 'abs', 'core']): return "ПРЕСС"
     return "ОБЩЕЕ"
 
-# --- 4. CSS (APPLE DESIGN) ---
+# --- 4. CSS (APPLE FITNESS STYLE) ---
 st.markdown(f"""
     <style>
-    /* FONTS: SF Pro Display */
+    /* SF FONT STACK */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     
     html, body, [class*="css"] {{
-        font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Helvetica, Arial, sans-serif;
+        font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
     }}
 
     /* BACKGROUND */
@@ -107,70 +101,89 @@ st.markdown(f"""
     
     #MainMenu, footer, header {{ visibility: hidden; }}
 
-    /* CARDS */
+    /* iOS CARDS (Dark Gray) */
     .ios-card {{
         background-color: {IOS_CARD};
         border-radius: 20px;
-        padding: 20px;
-        margin-bottom: 20px;
-        border: 1px solid rgba(255,255,255,0.08);
+        padding: 24px;
+        margin-bottom: 24px;
+        border: none;
     }}
 
-    /* PROFILE */
-    .profile-header {{ display: flex; align-items: center; gap: 16px; }}
+    /* PROFILE HEADER */
+    .profile-header {{
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }}
     .avatar-img {{
-        width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
-        border: 2px solid {IOS_CARD};
+        width: 60px; height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
     }}
     .user-info h2 {{
-        margin: 0; font-size: 20px; font-weight: 700; color: white;
+        margin: 0; font-size: 22px; font-weight: 700; color: white; letter-spacing: -0.5px;
     }}
     .user-info p {{
-        margin: 0; font-size: 13px; color: {IOS_SUBTEXT}; font-weight: 500;
+        margin: 0; font-size: 14px; color: {IOS_SUBTEXT}; font-weight: 500;
     }}
     
+    /* PROGRESS BAR (Apple Blue) */
     .progress-track {{
-        width: 100%; height: 6px; background: #2C2C2E; border-radius: 10px; margin-top: 15px;
+        width: 100%; height: 6px; background: #3a3a3c; border-radius: 10px; margin-top: 16px; overflow: hidden;
     }}
     .progress-fill {{
-        height: 100%; background: {IOS_ACCENT}; border-radius: 10px;
+        height: 100%; background: {IOS_BLUE}; border-radius: 10px;
     }}
 
-    /* HEADERS */
+    /* SECTION TITLES */
     .section-header {{
-        font-size: 22px; font-weight: 700; color: white; margin: 30px 0 15px 0; letter-spacing: -0.5px;
+        font-size: 22px; font-weight: 700; color: white; margin: 30px 0 16px 0; letter-spacing: -0.5px;
     }}
 
-    /* CALENDAR BUTTONS (APPLE KEYBOARD STYLE) */
-    div[data-testid="column"] {{ padding: 2px !important; }}
+    /* CALENDAR GRID (Inside Card) */
+    .calendar-container {{
+        background-color: {IOS_CARD};
+        border-radius: 20px;
+        padding: 20px;
+    }}
     
+    /* REMOVE GAP */
+    div[data-testid="column"] {{ padding: 2px !important; margin: 0 !important; }}
+    div[data-testid="stHorizontalBlock"] {{ gap: 4px !important; }}
+    
+    /* CALENDAR BUTTONS (Dark Gray Squares) */
     div.stButton > button {{
         width: 100%; aspect-ratio: 1/1;
-        background-color: #2C2C2E; /* Light Gray for keys */
+        background-color: {IOS_GRAY_BTN};
         border: none;
         color: white;
-        border-radius: 8px; 
-        font-weight: 500;
+        border-radius: 8px; /* Soft square */
+        font-weight: 600;
         font-size: 16px;
-        transition: background 0.1s;
+        transition: opacity 0.2s;
     }}
-    div.stButton > button:active {{ opacity: 0.7; transform: scale(0.95); }}
+    div.stButton > button:active {{ opacity: 0.7; }}
     
-    /* INPUTS */
+    /* INPUTS (iOS Fields) */
     div[data-baseweb="input"] {{
-        background-color: {IOS_CARD} !important;
-        border-radius: 12px !important;
-        border: 1px solid rgba(255,255,255,0.1) !important;
+        background-color: {IOS_GRAY_BTN} !important;
+        border-radius: 10px !important;
+        border: none !important;
     }}
-    input {{ color: white !important; font-size: 16px; }}
+    input {{ color: white !important; font-weight: 500; font-size: 16px; }}
     
-    /* EXPANDER */
+    /* EXPANDER (Clean) */
     .streamlit-expanderHeader {{
         background-color: {IOS_CARD} !important;
         border-radius: 12px !important;
         color: white !important;
-        border: 1px solid rgba(255,255,255,0.1) !important;
+        font-weight: 600;
+        border: none !important;
     }}
+    
+    /* HIDE NAV BAR GAP */
+    div[data-testid="stVerticalBlock"] > div {{ gap: 10px; }}
     </style>
 """, unsafe_allow_html=True)
 
@@ -212,36 +225,36 @@ st.markdown(f"""
             <p>{rank['title']} • {total_xp} XP</p>
         </div>
         <div style="flex-grow:1;"></div>
-        <img src="{rank['icon']}" style="height:50px; object-fit:contain;">
+        <img src="{rank['icon']}" style="height:40px; width:40px; object-fit:contain; border-radius:4px; background:#333; padding:2px;">
     </div>
     <div class="progress-track">
         <div class="progress-fill" style="width: {rank['progress']}%;"></div>
     </div>
-    <div style="margin-top:8px; display:flex; justify-content:space-between; font-size:12px; color:#8E8E93; font-weight:500;">
+    <div style="margin-top:8px; display:flex; justify-content:space-between; font-size:13px; color:#8E8E93;">
         <span>Current Rank</span>
         <span>{rank['next_xp']} XP to next</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# --- 7. NAVIGATION (FIXED DARK THEME) ---
-# Исправленный стиль меню: прозрачный фон и серые кнопки
+# --- 7. NAVIGATION (SEGMENTED CONTROL STYLE - GREY PILL) ---
+# Стиль меню изменен, чтобы выглядеть как серый овал на черном фоне
 selected = option_menu(None, ["Summary", "Logbook", "Coach"], 
     icons=["grid.fill", "list.bullet", "waveform"], 
     default_index=0, orientation="horizontal",
     styles={
-        "container": {"padding": "0!important", "background-color": "transparent", "margin-bottom": "20px"},
+        "container": {"padding": "4px", "background-color": "#1C1C1E", "border-radius": "30px", "margin-bottom": "20px"},
         "icon": {"color": "#8E8E93", "font-size": "14px"}, 
-        "nav-link": {"font-size": "14px", "text-align": "center", "margin": "0px", "color": "#8E8E93", "font-weight": "600", "--hover-color": "#2C2C2E"},
-        "nav-link-selected": {"background-color": "#3A3A3C", "color": "#FFF", "border-radius": "10px"},
+        "nav-link": {"font-size": "14px", "text-align": "center", "margin": "0px", "color": "#8E8E93", "font-weight": "600", "border-radius": "25px"},
+        "nav-link-selected": {"background-color": "#636366", "color": "#FFF", "box-shadow": "0 2px 4px rgba(0,0,0,0.2)"},
     }
 )
 
 if selected == "Summary":
     
-    # 1. CALENDAR (FIRST)
+    # 1. CALENDAR (APPLE STYLE)
     st.markdown('<div class="section-header">Calendar</div>', unsafe_allow_html=True)
-    st.markdown('<div class="ios-card" style="padding:15px;">', unsafe_allow_html=True)
+    st.markdown('<div class="ios-card">', unsafe_allow_html=True)
     
     if 'c_year' not in st.session_state: st.session_state.c_year = date.today().year
     if 'c_month' not in st.session_state: st.session_state.c_month = date.today().month
@@ -255,11 +268,12 @@ if selected == "Summary":
         st.session_state.c_month = m
         st.session_state.c_year = y
 
+    # Month Header with Arrows inside
     c1, c2, c3 = st.columns([1,4,1])
     with c1: st.button("‹", on_click=change_m, args=(-1,), key="p")
     with c2: 
         mn = calendar.month_name[st.session_state.c_month]
-        st.markdown(f"<div style='text-align:center; font-weight:700; font-size:17px; color:white; padding-top:10px;'>{mn} {st.session_state.c_year}</div>", unsafe_allow_html=True)
+        st.markdown(f"<div style='text-align:center; font-weight:700; font-size:18px; color:white; padding-top:8px;'>{mn} {st.session_state.c_year}</div>", unsafe_allow_html=True)
     with c3: st.button("›", on_click=change_m, args=(1,), key="n")
 
     cal_obj = calendar.monthcalendar(st.session_state.c_year, st.session_state.c_month)
@@ -267,7 +281,7 @@ if selected == "Summary":
     
     cols = st.columns(7)
     for i, d in enumerate(["M","T","W","T","F","S","S"]):
-        cols[i].markdown(f"<div style='text-align:center; font-size:12px; color:#636366; font-weight:600; margin-bottom:5px;'>{d}</div>", unsafe_allow_html=True)
+        cols[i].markdown(f"<div style='text-align:center; font-size:13px; color:#8E8E93; font-weight:600; margin-bottom:10px;'>{d}</div>", unsafe_allow_html=True)
 
     for week in cal_obj:
         cols = st.columns(7)
@@ -285,47 +299,55 @@ if selected == "Summary":
                     else: st.session_state.cal_date = None
                     st.rerun()
 
-                # iOS Colors (Logic)
-                bg = "#2C2C2E" # Dark Gray btn
+                # iOS Colors Logic
+                bg = "#2C2C2E" # Default Dark Gray
                 fg = "white"
                 
                 if is_tr: 
-                    bg = "#30D158" # iOS Green
-                    fg = "black"
+                    # Apple Green/Blue or Custom Rank Color? Using Blue for sleekness
+                    bg = IOS_BLUE
+                    fg = "white"
                 elif curr < today: 
-                    bg = "#3A3A3C" # Slightly lighter gray for past
+                    bg = "#1C1C1E" # Blend in
+                    fg = "#636366" # Dimmed
                 
                 if is_tod: 
-                    fg = "#0A84FF" # Blue text for today
-                    if not is_tr: bg = "#1C1C1E" # Transparent background if not trained
+                    if not is_tr:
+                        # Outline for today if no training
+                        bg = "#2C2C2E"
+                        fg = IOS_BLUE 
+                    else:
+                        fg = "white" # White text on blue bg
 
-                # CSS Injection for this button
+                # CSS Injection
                 st.markdown(f"""<script>
                     var buttons = window.parent.document.querySelectorAll('div[data-testid="column"] button');
                     for (var i = 0; i < buttons.length; i++) {{
                         if (buttons[i].innerText === "{label}") {{
                             buttons[i].style.backgroundColor = "{bg}";
                             buttons[i].style.color = "{fg}";
-                            if ("{is_tod}" == "True") {{ buttons[i].style.border = "1px solid #0A84FF"; }}
+                            if ("{is_tod}" == "True") {{ 
+                                buttons[i].style.border = "2px solid {IOS_BLUE}"; 
+                            }}
                         }}
                     }}
                 </script>""", unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 2. RADAR & STATS
-    st.markdown('<div class="section-header">Analysis</div>', unsafe_allow_html=True)
+    # 2. RADAR
+    st.markdown('<div class="section-header">Performance</div>', unsafe_allow_html=True)
     st.markdown('<div class="ios-card">', unsafe_allow_html=True)
     
     f_df = df.copy()
-    sub_title = "Lifetime Stats"
+    filter_txt = "Lifetime"
     if st.session_state.cal_date:
         f_df = df[df['Date'].dt.date == st.session_state.cal_date]
-        sub_title = f"Filter: {st.session_state.cal_date.strftime('%b %d')}"
-        if st.button("Clear Filter", use_container_width=True):
+        filter_txt = f"{st.session_state.cal_date.strftime('%b %d')}"
+        if st.button("Reset Filter", use_container_width=True):
             st.session_state.cal_date = None
             st.rerun()
             
-    st.markdown(f"<div style='font-size:13px; color:#8E8E93; margin-bottom:15px; font-weight:500; text-align:center;'>{sub_title}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div style='text-align:center; font-size:14px; color:#8E8E93; margin-bottom:10px;'>{filter_txt}</div>", unsafe_allow_html=True)
 
     if not f_df.empty:
         muscles = f_df.groupby('Muscle')['Сет'].count().reset_index()
@@ -334,17 +356,17 @@ if selected == "Summary":
         
         fig = go.Figure(data=go.Scatterpolar(
             r=radar['Сет'], theta=radar['Muscle'], fill='toself',
-            line=dict(color=IOS_ACCENT, width=2),
+            line=dict(color=IOS_BLUE, width=2),
             fillcolor='rgba(10, 132, 255, 0.2)',
             marker=dict(size=4)
         ))
         fig.update_layout(
             polar=dict(
                 radialaxis=dict(visible=True, showticklabels=False, linecolor='#333'),
-                angularaxis=dict(linecolor='#333', tickfont=dict(color="#8E8E93", size=11, weight="600")),
+                angularaxis=dict(linecolor='#333', tickfont=dict(color="#8E8E93", size=11, weight="bold")),
                 bgcolor='rgba(0,0,0,0)'
             ),
-            showlegend=False, height=280, margin=dict(l=30, r=30, t=10, b=10),
+            showlegend=False, height=250, margin=dict(l=30, r=30, t=10, b=10),
             paper_bgcolor='rgba(0,0,0,0)', font=dict(family="-apple-system")
         )
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar':False})
@@ -353,7 +375,7 @@ if selected == "Summary":
 
     # 3. LIST
     if not f_df.empty:
-        st.markdown('<div class="section-header">Recent Activity</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-header">Recent Logs</div>', unsafe_allow_html=True)
         show = f_df.sort_values(by=['Date', 'Сет'], ascending=[False, True]).copy()
         show['Date'] = show['Date'].dt.strftime('%d.%m')
         st.dataframe(show[['Date', 'Сет', 'Упражнение', 'Вес (кг)', 'Повт']], use_container_width=True, hide_index=True)
@@ -370,7 +392,7 @@ elif selected == "Logbook":
         with c3: p = st.number_input("Reps", 1)
         with c4: w = st.number_input("Weight", step=2.5)
         with c5: r = st.number_input("RPE", 1)
-        if st.form_submit_button("Save Entry", use_container_width=True):
+        if st.form_submit_button("Save", use_container_width=True):
             try:
                 sheet.append_row([str(d), s, e, p, w, r, w*r, "", ""])
                 st.success("Saved")
@@ -389,7 +411,7 @@ elif selected == "Coach":
         try:
             genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
             model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
-            ans = model.generate_content(f"Role: Army Drill Sergeant. User Rank: {rank['title']}. Q: {q}").text
+            ans = model.generate_content(f"Tactical Coach. Rank: {rank['title']}. Brief. Q: {q}").text
             st.chat_message("assistant").markdown(ans)
             st.session_state.msg.append({"role": "assistant", "content": ans})
         except: st.error("Offline")
