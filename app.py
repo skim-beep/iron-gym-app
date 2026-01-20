@@ -8,7 +8,7 @@ import json
 from streamlit_option_menu import option_menu
 import calendar
 
-# --- 1. НАСТРОЙКИ ---
+# --- 1. SETTINGS ---
 st.set_page_config(
     page_title="IronGym",
     page_icon="",
@@ -16,20 +16,19 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# --- 2. APPLE DESIGN COLORS ---
-IOS_BG = "#000000"           # True Black
-IOS_CARD = "#1C1C1E"         # Secondary System Fill (Dark Gray)
-IOS_BLUE = "#0A84FF"         # System Blue (Action)
-IOS_GRAY_BTN = "#2C2C2E"     # Tertiary System Fill (Buttons)
+# --- 2. APPLE COLORS ---
+IOS_BG = "#000000"
+IOS_CARD = "#1C1C1E"         # Secondary System Fill
+IOS_BTN_BG = "#2C2C2E"       # Tertiary System Fill
+IOS_BLUE = "#0A84FF"
 IOS_TEXT = "#FFFFFF"
-IOS_SUBTEXT = "#8E8E93"      # System Gray
-IOS_BORDER = "rgba(255, 255, 255, 0.1)"
+IOS_SUBTEXT = "#8E8E93"
 
 AVATAR_URL = "https://i.ibb.co.com/TDhQXVTR/unnamed-3.jpg"
 USER_BIRTHDAY = date(1985, 2, 20)
 USER_WEIGHT_CURRENT = 85.0 
 
-# --- 3. ASSETS (REALISTIC) ---
+# --- 3. ASSETS ---
 RANK_IMGS = {
     "PV1": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/73/U.S._Army_E-1_insignia.jpg/100px-U.S._Army_E-1_insignia.jpg",
     "PV2": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/US_Army_E2_insignia.jpg/100px-US_Army_E2_insignia.jpg",
@@ -83,17 +82,15 @@ def detect_muscle(ex):
     if any(x in ex for x in ['пресс', 'abs', 'core']): return "ПРЕСС"
     return "ОБЩЕЕ"
 
-# --- 4. CSS (APPLE FITNESS STYLE) ---
+# --- 4. CSS (iOS WIDGET STYLE) ---
 st.markdown(f"""
     <style>
-    /* SF FONT STACK */
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
     
     html, body, [class*="css"] {{
         font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
     }}
 
-    /* BACKGROUND */
     .stApp {{
         background-color: {IOS_BG};
         color: {IOS_TEXT};
@@ -101,36 +98,25 @@ st.markdown(f"""
     
     #MainMenu, footer, header {{ visibility: hidden; }}
 
-    /* iOS CARDS (Dark Gray) */
+    /* IOS CARD CONTAINER */
     .ios-card {{
         background-color: {IOS_CARD};
-        border-radius: 20px;
-        padding: 24px;
+        border-radius: 22px;
+        padding: 20px;
         margin-bottom: 24px;
-        border: none;
+        border: 1px solid #2C2C2E;
     }}
 
-    /* PROFILE HEADER */
-    .profile-header {{
-        display: flex;
-        align-items: center;
-        gap: 16px;
-    }}
+    /* PROFILE */
+    .profile-header {{ display: flex; align-items: center; gap: 16px; }}
     .avatar-img {{
-        width: 60px; height: 60px;
-        border-radius: 50%;
-        object-fit: cover;
+        width: 60px; height: 60px; border-radius: 50%; object-fit: cover;
     }}
-    .user-info h2 {{
-        margin: 0; font-size: 22px; font-weight: 700; color: white; letter-spacing: -0.5px;
-    }}
-    .user-info p {{
-        margin: 0; font-size: 14px; color: {IOS_SUBTEXT}; font-weight: 500;
-    }}
+    .user-info h2 {{ margin: 0; font-size: 20px; font-weight: 700; color: white; }}
+    .user-info p {{ margin: 0; font-size: 14px; color: {IOS_SUBTEXT}; }}
     
-    /* PROGRESS BAR (Apple Blue) */
     .progress-track {{
-        width: 100%; height: 6px; background: #3a3a3c; border-radius: 10px; margin-top: 16px; overflow: hidden;
+        width: 100%; height: 6px; background: #3a3a3c; border-radius: 10px; margin-top: 16px;
     }}
     .progress-fill {{
         height: 100%; background: {IOS_BLUE}; border-radius: 10px;
@@ -138,52 +124,45 @@ st.markdown(f"""
 
     /* SECTION TITLES */
     .section-header {{
-        font-size: 22px; font-weight: 700; color: white; margin: 30px 0 16px 0; letter-spacing: -0.5px;
+        font-size: 22px; font-weight: 700; color: white; margin: 30px 0 16px 0;
     }}
 
-    /* CALENDAR GRID (Inside Card) */
-    .calendar-container {{
+    /* CALENDAR WIDGET GRID (FIX) */
+    /* This creates the dark card effect for calendar */
+    div[data-testid="stHorizontalBlock"] {{
         background-color: {IOS_CARD};
-        border-radius: 20px;
-        padding: 20px;
+        border-radius: 16px;
+        padding: 4px;
     }}
     
-    /* REMOVE GAP */
-    div[data-testid="column"] {{ padding: 2px !important; margin: 0 !important; }}
-    div[data-testid="stHorizontalBlock"] {{ gap: 4px !important; }}
+    div[data-testid="column"] {{ padding: 2px !important; }}
     
-    /* CALENDAR BUTTONS (Dark Gray Squares) */
+    /* Calendar Buttons */
     div.stButton > button {{
         width: 100%; aspect-ratio: 1/1;
-        background-color: {IOS_GRAY_BTN};
+        background-color: transparent; /* Transparent to blend with card */
         border: none;
         color: white;
-        border-radius: 8px; /* Soft square */
+        border-radius: 8px;
         font-weight: 600;
         font-size: 16px;
-        transition: opacity 0.2s;
     }}
-    div.stButton > button:active {{ opacity: 0.7; }}
+    div.stButton > button:hover {{ background-color: #3A3A3C; }}
     
-    /* INPUTS (iOS Fields) */
+    /* INPUTS */
     div[data-baseweb="input"] {{
-        background-color: {IOS_GRAY_BTN} !important;
+        background-color: {IOS_BTN_BG} !important;
         border-radius: 10px !important;
         border: none !important;
     }}
-    input {{ color: white !important; font-weight: 500; font-size: 16px; }}
+    input {{ color: white !important; font-size: 16px; }}
     
-    /* EXPANDER (Clean) */
-    .streamlit-expanderHeader {{
-        background-color: {IOS_CARD} !important;
-        border-radius: 12px !important;
+    /* SEGMENTED CONTROL FIX */
+    .nav-link-selected {{
+        background-color: #636366 !important;
         color: white !important;
-        font-weight: 600;
-        border: none !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
     }}
-    
-    /* HIDE NAV BAR GAP */
-    div[data-testid="stVerticalBlock"] > div {{ gap: 10px; }}
     </style>
 """, unsafe_allow_html=True)
 
@@ -225,7 +204,7 @@ st.markdown(f"""
             <p>{rank['title']} • {total_xp} XP</p>
         </div>
         <div style="flex-grow:1;"></div>
-        <img src="{rank['icon']}" style="height:40px; width:40px; object-fit:contain; border-radius:4px; background:#333; padding:2px;">
+        <img src="{rank['icon']}" style="height:45px; object-fit:contain;">
     </div>
     <div class="progress-track">
         <div class="progress-fill" style="width: {rank['progress']}%;"></div>
@@ -237,25 +216,24 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# --- 7. NAVIGATION (SEGMENTED CONTROL STYLE - GREY PILL) ---
-# Стиль меню изменен, чтобы выглядеть как серый овал на черном фоне
+# --- 7. NAVIGATION (SEGMENTED CONTROL) ---
 selected = option_menu(None, ["Summary", "Logbook", "Coach"], 
     icons=["grid.fill", "list.bullet", "waveform"], 
     default_index=0, orientation="horizontal",
     styles={
-        "container": {"padding": "4px", "background-color": "#1C1C1E", "border-radius": "30px", "margin-bottom": "20px"},
+        "container": {"padding": "4px", "background-color": "#1C1C1E", "border-radius": "12px", "margin-bottom": "25px"},
         "icon": {"color": "#8E8E93", "font-size": "14px"}, 
-        "nav-link": {"font-size": "14px", "text-align": "center", "margin": "0px", "color": "#8E8E93", "font-weight": "600", "border-radius": "25px"},
-        "nav-link-selected": {"background-color": "#636366", "color": "#FFF", "box-shadow": "0 2px 4px rgba(0,0,0,0.2)"},
+        "nav-link": {"font-size": "14px", "text-align": "center", "margin": "0px", "color": "#8E8E93", "font-weight": "600"},
+        "nav-link-selected": {"background-color": "#636366", "color": "#FFF", "border-radius": "10px"},
     }
 )
 
 if selected == "Summary":
     
-    # 1. CALENDAR (APPLE STYLE)
+    # --- CALENDAR WIDGET ---
     st.markdown('<div class="section-header">Calendar</div>', unsafe_allow_html=True)
-    st.markdown('<div class="ios-card">', unsafe_allow_html=True)
     
+    # State
     if 'c_year' not in st.session_state: st.session_state.c_year = date.today().year
     if 'c_month' not in st.session_state: st.session_state.c_month = date.today().month
     if 'cal_date' not in st.session_state: st.session_state.cal_date = None
@@ -268,74 +246,67 @@ if selected == "Summary":
         st.session_state.c_month = m
         st.session_state.c_year = y
 
-    # Month Header with Arrows inside
-    c1, c2, c3 = st.columns([1,4,1])
-    with c1: st.button("‹", on_click=change_m, args=(-1,), key="p")
-    with c2: 
-        mn = calendar.month_name[st.session_state.c_month]
-        st.markdown(f"<div style='text-align:center; font-weight:700; font-size:18px; color:white; padding-top:8px;'>{mn} {st.session_state.c_year}</div>", unsafe_allow_html=True)
-    with c3: st.button("›", on_click=change_m, args=(1,), key="n")
+    # CONTAINER CARD START
+    with st.container():
+        # Header (Month)
+        c1, c2, c3 = st.columns([1,4,1])
+        with c1: st.button("‹", on_click=change_m, args=(-1,), key="p")
+        with c2: 
+            mn = calendar.month_name[st.session_state.c_month]
+            st.markdown(f"<div style='text-align:center; font-weight:700; font-size:18px; color:white; padding-top:8px;'>{mn} {st.session_state.c_year}</div>", unsafe_allow_html=True)
+        with c3: st.button("›", on_click=change_m, args=(1,), key="n")
 
-    cal_obj = calendar.monthcalendar(st.session_state.c_year, st.session_state.c_month)
-    today = date.today()
-    
-    cols = st.columns(7)
-    for i, d in enumerate(["M","T","W","T","F","S","S"]):
-        cols[i].markdown(f"<div style='text-align:center; font-size:13px; color:#8E8E93; font-weight:600; margin-bottom:10px;'>{d}</div>", unsafe_allow_html=True)
-
-    for week in cal_obj:
+        # Days of Week
         cols = st.columns(7)
-        for i, day in enumerate(week):
-            if day == 0:
-                cols[i].write("")
-            else:
-                curr = date(st.session_state.c_year, st.session_state.c_month, day)
-                is_tr = curr in trained_dates
-                is_tod = (curr == today)
-                label = f"{day}"
-                
-                if cols[i].button(label, key=f"d_{curr}"):
-                    if is_tr: st.session_state.cal_date = curr
-                    else: st.session_state.cal_date = None
-                    st.rerun()
+        for i, d in enumerate(["M","T","W","T","F","S","S"]):
+            cols[i].markdown(f"<div style='text-align:center; font-size:13px; color:#8E8E93; font-weight:600; margin-bottom:10px;'>{d}</div>", unsafe_allow_html=True)
 
-                # iOS Colors Logic
-                bg = "#2C2C2E" # Default Dark Gray
-                fg = "white"
-                
-                if is_tr: 
-                    # Apple Green/Blue or Custom Rank Color? Using Blue for sleekness
-                    bg = IOS_BLUE
+        # Calendar Grid
+        cal_obj = calendar.monthcalendar(st.session_state.c_year, st.session_state.c_month)
+        today = date.today()
+
+        for week in cal_obj:
+            cols = st.columns(7)
+            for i, day in enumerate(week):
+                if day == 0:
+                    cols[i].write("")
+                else:
+                    curr = date(st.session_state.c_year, st.session_state.c_month, day)
+                    is_tr = curr in trained_dates
+                    is_tod = (curr == today)
+                    label = f"{day}"
+                    
+                    if cols[i].button(label, key=f"d_{curr}"):
+                        if is_tr: st.session_state.cal_date = curr
+                        else: st.session_state.cal_date = None
+                        st.rerun()
+
+                    # Styling Logic
+                    bg = "transparent"
                     fg = "white"
-                elif curr < today: 
-                    bg = "#1C1C1E" # Blend in
-                    fg = "#636366" # Dimmed
-                
-                if is_tod: 
-                    if not is_tr:
-                        # Outline for today if no training
+                    border = "none"
+                    
+                    if is_tr: # Trained -> Green Circle
+                        bg = "#30D158" 
+                        fg = "black"
+                    elif is_tod: # Today -> Blue Text
+                        fg = "#0A84FF"
                         bg = "#2C2C2E"
-                        fg = IOS_BLUE 
-                    else:
-                        fg = "white" # White text on blue bg
 
-                # CSS Injection
-                st.markdown(f"""<script>
-                    var buttons = window.parent.document.querySelectorAll('div[data-testid="column"] button');
-                    for (var i = 0; i < buttons.length; i++) {{
-                        if (buttons[i].innerText === "{label}") {{
-                            buttons[i].style.backgroundColor = "{bg}";
-                            buttons[i].style.color = "{fg}";
-                            if ("{is_tod}" == "True") {{ 
-                                buttons[i].style.border = "2px solid {IOS_BLUE}"; 
+                    st.markdown(f"""<script>
+                        var buttons = window.parent.document.querySelectorAll('div[data-testid="column"] button');
+                        for (var i = 0; i < buttons.length; i++) {{
+                            if (buttons[i].innerText === "{label}") {{
+                                buttons[i].style.backgroundColor = "{bg}";
+                                buttons[i].style.color = "{fg}";
+                                buttons[i].style.borderRadius = "50%"; /* Round Buttons */
                             }}
                         }}
-                    }}
-                </script>""", unsafe_allow_html=True)
-    st.markdown('</div>', unsafe_allow_html=True)
+                    </script>""", unsafe_allow_html=True)
+    # CONTAINER CARD END
 
-    # 2. RADAR
-    st.markdown('<div class="section-header">Performance</div>', unsafe_allow_html=True)
+    # --- RADAR ---
+    st.markdown('<div class="section-header">Stats</div>', unsafe_allow_html=True)
     st.markdown('<div class="ios-card">', unsafe_allow_html=True)
     
     f_df = df.copy()
@@ -343,7 +314,7 @@ if selected == "Summary":
     if st.session_state.cal_date:
         f_df = df[df['Date'].dt.date == st.session_state.cal_date]
         filter_txt = f"{st.session_state.cal_date.strftime('%b %d')}"
-        if st.button("Reset Filter", use_container_width=True):
+        if st.button("Clear Filter", use_container_width=True):
             st.session_state.cal_date = None
             st.rerun()
             
@@ -366,16 +337,16 @@ if selected == "Summary":
                 angularaxis=dict(linecolor='#333', tickfont=dict(color="#8E8E93", size=11, weight="bold")),
                 bgcolor='rgba(0,0,0,0)'
             ),
-            showlegend=False, height=250, margin=dict(l=30, r=30, t=10, b=10),
+            showlegend=False, height=280, margin=dict(l=30, r=30, t=10, b=10),
             paper_bgcolor='rgba(0,0,0,0)', font=dict(family="-apple-system")
         )
         st.plotly_chart(fig, use_container_width=True, config={'displayModeBar':False})
     else: st.info("No data.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    # 3. LIST
+    # --- LIST ---
     if not f_df.empty:
-        st.markdown('<div class="section-header">Recent Logs</div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-header">Recent</div>', unsafe_allow_html=True)
         show = f_df.sort_values(by=['Date', 'Сет'], ascending=[False, True]).copy()
         show['Date'] = show['Date'].dt.strftime('%d.%m')
         st.dataframe(show[['Date', 'Сет', 'Упражнение', 'Вес (кг)', 'Повт']], use_container_width=True, hide_index=True)
@@ -411,7 +382,7 @@ elif selected == "Coach":
         try:
             genai.configure(api_key=st.secrets["GOOGLE_API_KEY"])
             model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
-            ans = model.generate_content(f"Tactical Coach. Rank: {rank['title']}. Brief. Q: {q}").text
+            ans = model.generate_content(f"Role: Army Drill Sergeant. User Rank: {rank['title']}. Q: {q}").text
             st.chat_message("assistant").markdown(ans)
             st.session_state.msg.append({"role": "assistant", "content": ans})
         except: st.error("Offline")
